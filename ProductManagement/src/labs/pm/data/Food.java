@@ -35,6 +35,13 @@ public class Food extends Product {
         this.bestBefore = bestBefore;
     }
 
+    /**
+     * <h2>Basic constructor for creating new food products</h2>
+     * @param name String - The name of the priduct
+     * @param price BigDecimal - Current product price
+     * @param rating Rating - Current customer rating of the product
+     * @param bestBefore LocalDate - Shelf life
+     */
     public Food(String name, BigDecimal price, Rating rating, LocalDate bestBefore) {
         super(name, price, rating);
         this.bestBefore = bestBefore;
