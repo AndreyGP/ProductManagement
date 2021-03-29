@@ -2,6 +2,9 @@ package labs.pm.data;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.Properties;
+import static java.math.BigDecimal.valueOf;
+
 
 /**
  * <p>ProductManagement Created by Home Work Studio AndrHey [andreigp]</p>
@@ -13,10 +16,13 @@ import java.time.LocalDate;
  */
 
 public class Food extends Product {
+    /**
+     * Product shelf life
+     */
     private LocalDate bestBefore;
 
     /**
-     * This constructor is used to create an object of an existing product obtained from the database.
+     * <h2>This constructor is used to create an object of an existing product obtained from the database.</h2>
      * @param id int - ID[SKU] product
      * @param name String - The name of the priduct
      * @param price BigDecimal - Current product price
@@ -29,13 +35,37 @@ public class Food extends Product {
         this.bestBefore = bestBefore;
     }
 
+    public Food(String name, BigDecimal price, Rating rating, LocalDate bestBefore) {
+        super(name, price, rating);
+        this.bestBefore = bestBefore;
+    }
+
     /**
-     * Get value of the best before product
-     *
+     * <h2>Get value of the best before product</h2>
      * @return LocalDate value field bestBefore
      * @see LocalDate
      */
     public LocalDate getBestBefore() {
-        return bestBefore;
+        return this.bestBefore;
+    }
+
+    @Override
+    public Food applyName(String name) {
+        return new Food(this.getId(), name, this.getPrice(), this.getRating(), valueOf(this.getPercentageDiscount()), this.getBestBefore());
+    }
+
+    @Override
+    public Food applyPrice(BigDecimal price) {
+        return new Food(this.getId(), this.getName(), price, this.getRating(), valueOf(this.getPercentageDiscount()), this.getBestBefore());
+    }
+
+    @Override
+    public Food applyRating(Rating rating) {
+        return new Food(this.getId(), this.getName(), this.getPrice(), rating, valueOf(this.getPercentageDiscount()), this.getBestBefore());
+    }
+
+    @Override
+    public Food applyDiscountRate(int rate) {
+        return new Food(this.getId(), this.getName(), this.getPrice(), this.getRating(), valueOf(rate), this.getBestBefore());
     }
 }
