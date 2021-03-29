@@ -8,19 +8,25 @@ package labs.pm.data;
  */
 
 public enum Rating {
-    NOT_RATED("\u2606\u2606\u2606\u2606\u2606"),
-    ONE_STARS("\u2605\u2606\u2606\u2606\u2606"),
-    TWO_STARS("\u2605\u2605\u2606\u2606\u2606"),
-    THREE_STARS("\u2605\u2605\u2605\u2606\u2606"),
-    FOUR_STARS("\u2605\u2605\u2605\u2605\u2606"),
-    FIVE_STARS("\u2605\u2605\u2605\u2605\u2605");
+    NOT_RATED("\u2606\u2606\u2606\u2606\u2606", 0),
+    ONE_STARS("\u2605\u2606\u2606\u2606\u2606", 1),
+    TWO_STARS("\u2605\u2605\u2606\u2606\u2606", 2),
+    THREE_STARS("\u2605\u2605\u2605\u2606\u2606", 3),
+    FOUR_STARS("\u2605\u2605\u2605\u2605\u2606", 4),
+    FIVE_STARS("\u2605\u2605\u2605\u2605\u2605", 5);
     private final String stars;
+    private final int ratingLevel;
 
-    private Rating(String stars) {
+    private Rating(String stars, int ratingLevel) {
         this.stars = stars;
+        this.ratingLevel = ratingLevel;
     }
 
     public String getStars() {
         return this.stars;
+    }
+
+    public int getRatingLevel() {
+        return this.ratingLevel;
     }
 }
