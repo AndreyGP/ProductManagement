@@ -24,13 +24,15 @@ public class Shop {
         Food p2 = new Food("Bun", valueOf(69.99), NOT_RATED, LocalDate.now().plusDays(7));
 
         String pattern = getBundle("resources.descriptions", US).getString("product");
+
         String product = format(pattern, p1.getId(), p1.getName(), p1.getPrice(), p1.getDiscount(), p1.getRating().getStars());
         System.out.println(product);
         product = format(pattern, p2.getId(), p2.getName(), p2.getPrice(), p2.getDiscount(), p2.getRating().getStars());
         System.out.println(product);
-        
+
         System.out.println();
         System.out.println("Change some parameter");
+
         p1 = p1.applyPrice(valueOf(89.99))
                 .applyDiscountRate(7)
                 .applyRating(FOUR_STARS);
