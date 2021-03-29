@@ -3,6 +3,7 @@ package labs.pm.data;
 import java.math.BigDecimal;
 
 import static java.math.RoundingMode.HALF_UP;
+import static java.math.BigDecimal.valueOf;
 import static labs.pm.data.Rating.*;
 
 /**
@@ -13,164 +14,161 @@ import static labs.pm.data.Rating.*;
  * @author Andrei G. Pastushenko
  */
 
-public class Product {
+abstract public class Product implements CommodityUnit {
     /**
      * Assigns an ID [SKU] for each new product
      */
     private static int maxId = 0;
+
     /**
      * Current product ID. Assigned when creating a new product or initialized
      * with the value of the id field in the table of existing products database
      */
     private final int id;
+
     /**
-     * Product name
+     * Product title
      */
     private final String name;
+
     /**
      * Current product price
      */
     private final BigDecimal price;
+
     /**
      * The current customer rating of the product.
      * A new product or a product that has not yet been voted on by a customer has no rating
      */
     private final Rating rating;
+
+    /**
+     * Discount amount in percent - n%
+     */
+    private final int percentageDiscount;
+
     /**
      * Discount amount for the current product
      */
     private final BigDecimal DISCOUNT_RATE;
 
     /**
-     * Parameterless constructor. Sets "null" values to the fields of the class. Used for debugging.
+     * <h2>Parameterless constructor.</h2> <p>Sets "null" values to the fields of the class. Used for debugging.</p>
      */
-    public Product() {
-        this(0, "no name", BigDecimal.ZERO, NOT_RATED, BigDecimal.valueOf(0.00));
+    Product() {
+        this(0, "no name", BigDecimal.ZERO, NOT_RATED, valueOf(0.00));
     }
 
     /**
-     * Constructor for creating a completely new product.
-     * It is used when it is necessary to create a unit of goods in the database and first set its price
-     * Calls the constructor of the current class with extended object initialization.
-     * The default rating is passed Rating.NOT_RATED
-     * @param name String - The name of the product being created
+     * <h2>Constructor for creating a completely new product.</h2>
+     * <p>It is used when it is necessary to create a unit of goods in the database and first set its price
+     * Calls the constructor of the current class with extended object initialization.</p>
+     * <p>The default rating is passed Rating.NOT_RATED</p>
+     *
+     * @param name  String - The name of the product being created
      * @param price BigDecimal - Primary product interest
      */
-    public Product(String name, BigDecimal price) {
+    Product(String name, BigDecimal price) {
         this(name, price, NOT_RATED);
     }
 
     /**
-     * Basic constructor for creating a new product.
-     * It is used to create and save a new unit of product in the database, with a preliminary percentage
-     * and set the default primary rating (Not NOY_RATED).
-     * When creating a new product, a unique product ID[SKU] is generated and assigned
-     * @param name String - The name of the priduct being created
-     * @param price BigDecimal - Primary product interest
+     * <h2>Basic constructor for creating a new product.</h2>
+     * <p>It is used to create and save a new unit of product in the database, with a preliminary percentage
+     * and set the default primary rating (Not NOT_RATED).</p>
+     * <p>When creating a new product, a unique product ID[SKU] is generated and assigned</p>
+     *
+     * @param name   String - The name of the priduct being created
+     * @param price  BigDecimal - Primary product interest
      * @param rating BigDecimal - The primary rating given to a new product
      */
-    public Product(String name, BigDecimal price, Rating rating) {
+    Product(String name, BigDecimal price, Rating rating) {
         this.name = name;
         this.price = price;
         this.rating = rating;
-        this.DISCOUNT_RATE = BigDecimal.valueOf(0.05);
+        this.percentageDiscount = 5;
+        this.DISCOUNT_RATE = valueOf((double) percentageDiscount / (double) 100);
         this.id = ++maxId;
     }
+
     /**
-     * This constructor is used to create an object of an existing product obtained from the database.
-     * @param id int - ID[SKU] product
-     * @param name String - The name of the priduct
-     * @param price BigDecimal - Current product price
-     * @param rating Rating - Current customer rating of the product
+     * <h2>This constructor is used to create an object of an existing product obtained from the database.</h2>
+     *
+     * @param id            int - ID[SKU] product
+     * @param name          String - The name of the priduct
+     * @param price         BigDecimal - Current product price
+     * @param rating        Rating - Current customer rating of the product
      * @param DISCOUNT_RATE BigDecimal - The current discount for this product
-     * @param bestBefore LocalDate - Product shelf life
+     * @param bestBefore    LocalDate - Product shelf life
      */
-    public Product(int id, String name, BigDecimal price, Rating rating, BigDecimal DISCOUNT_RATE) {
+    Product(int id, String name, BigDecimal price, Rating rating, BigDecimal DISCOUNT_RATE) {
         this.id = id;
         this.name = name;
         this.price = price;
         this.rating = rating;
-        this.DISCOUNT_RATE = DISCOUNT_RATE;
+        this.percentageDiscount = DISCOUNT_RATE.intValue();
+        this.DISCOUNT_RATE = valueOf(percentageDiscount / (double) 100);
     }
 
-    /**
-     * Returns the product ID
-     * @return int id - SKU product
-     */
+    @Override
     public int getId() {
         return id;
     }
 
-    /**
-     * Returns the name of the product
-     * @return String name product
-     */
+    @Override
     public String getName() {
         return name;
     }
 
-    /**
-     * Returns the current price of a product
-     * @return BigDecimal price
-     */
+    @Override
     public BigDecimal getPrice() {
         return price;
     }
 
-    /**
-     * Returns the price of a product taking into account the current or personal discount
-     * @return BigDecimal final price
-     */
+    @Override
     public BigDecimal getDiscount() {
         return price.multiply(DISCOUNT_RATE).setScale(2, HALF_UP);
     }
 
-    /**
-     * Returns the current customer rating for a product
-     * @return Rating rating
-     * @see Rating
-     */
+    @Override
+    public int getPercentageDiscount() {
+        return percentageDiscount;
+    }
+
+    @Override
     public Rating getRating() {
         return rating;
     }
 
     /**
-     * A factory method that creates a new instance of a product using the state of the current object,
-     * but with a new name. Used to change the name of a product unit in the database.
-     * @param name String - New product name with current ID [SKU]
-     * @return Product - New instance.
+     * <h2>Method toString() overriding for convenient debugging</h2>
+     *
+     * @return Reference to a String object
+     * <p>Returns the full product description string</p>
+     * @see Object
      */
-    public Product applyName(String name) {
-        return new Product(this.id, name, this.price, this.rating, this.DISCOUNT_RATE);
+
+    @Override
+    public String toString() {
+        return new StringBuffer()
+                .append(getName())
+                .append(": SKU " + getId())
+                .append("; Full price " + getPrice())
+                .append("; Your personal discount " + getDiscount())
+                .append("; Current consumer rating " + getRating())
+                .toString();
     }
 
-    /**
-     * A factory method that creates a new instance of a product using the state of the current object,
-     * but with a new price. Used to change the price of a product unit in the database.
-     * @param price BigDecimal - New product price with current ID [SKU]
-     * @return Product - New instance
-     */
-    public Product applyPrice(BigDecimal price) {
-        return new Product(this.id, this.name, price, this.rating, this.DISCOUNT_RATE);
-    }
-
-    /**
-     * A factory method that creates a new instance of a product using the state of the current object,
-     * but with a new customer rating. Used to change the customer rating of a product unit in the database.
-     * @param rating Rating - New correct customer rating
-     * @return Product - New instance
-     */
-    public Product applyRating(Rating rating) {
-        return new Product(this.id, this.name, this.price, rating, this.DISCOUNT_RATE);
-    }
-
-    /**
-     * A factory method that creates a new instance of a product using the state of the current object,
-     * but with a new discount rate. Used to change the discount rate of a product unit in the database.
-     * @param rate int - New correct discount rate
-     * @return Product - New instance
-     */
-    public Product applyDiscountRate(int rate) {
-        return new Product(this.id, this.name, this.price, rating, BigDecimal.valueOf((double) rate / 100));
+    @Override
+    public String toStringJSON() {
+        return new StringBuffer()
+                .append("{")
+                .append("id: " + getId())
+                .append(", title: \"" + getName() + "\"")
+                .append(", price: " + getPrice())
+                .append(", basic_discount: " + getDiscount())
+                .append(", current_consumer_rating: " + getRating().getRatingLevel())
+                .append("}")
+                .toString();
     }
 }
