@@ -11,7 +11,7 @@ import static labs.pm.data.Rating.*;
  * <p>FileName: Product.java</p>
  * <p>Date/time: 21 март 2021 in 18:18</p>
  * @author Andrei G. Pastushenko
- * 
+ *
  * Parent class for all types of food items
  */
 
@@ -69,7 +69,7 @@ abstract public class Product implements CommodityUnit {
      * @param name  String - The name of the product being created
      * @param price BigDecimal - Primary product interest
      */
-    Product(String name, BigDecimal price) {
+    Product(final String name, final BigDecimal price) {
         this(name, price, NOT_RATED);
     }
 
@@ -83,7 +83,7 @@ abstract public class Product implements CommodityUnit {
      * @param price  BigDecimal - Primary product interest
      * @param rating BigDecimal - The primary rating given to a new product
      */
-    Product(String name, BigDecimal price, Rating rating) {
+    Product(final String name, final BigDecimal price, final Rating rating) {
         this.name = name;
         this.price = price;
         this.rating = rating;
@@ -102,7 +102,7 @@ abstract public class Product implements CommodityUnit {
      * @param DISCOUNT_RATE BigDecimal - The current discount for this product
      * @param bestBefore    LocalDate - Product shelf life
      */
-    Product(int id, String name, BigDecimal price, Rating rating, BigDecimal DISCOUNT_RATE) {
+    Product(final int id, final String name, final BigDecimal price, final Rating rating, final BigDecimal DISCOUNT_RATE) {
         this.id = id;
         this.name = name;
         this.price = price;
@@ -161,12 +161,12 @@ abstract public class Product implements CommodityUnit {
     }
 
     @Override
-    public boolean equals(Object o) {
+    public boolean equals(final Object o) {
         if (this == o) return true;
         if (o == null || !(o instanceof Product)) return false;
         if (getClass() != o.getClass()) return false;
 
-        Product product = (Product) o;
+        final Product product = (Product) o;
 
         if (id != product.id) return false;
         if (percentageDiscount != product.percentageDiscount) return false;

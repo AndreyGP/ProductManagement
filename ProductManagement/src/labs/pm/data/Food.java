@@ -1,9 +1,12 @@
 package labs.pm.data;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.util.Properties;
 import static java.math.BigDecimal.valueOf;
+import static java.time.LocalDate.*;
+import static java.math.RoundingMode.HALF_UP;
 
 
 /**
@@ -19,7 +22,7 @@ public class Food extends Product {
     /**
      * Product shelf life
      */
-    private LocalDate bestBefore;
+    private final LocalDate bestBefore;
 
     /**
      * <h2>This constructor is used to create an object of an existing product obtained from the database.</h2>
@@ -30,7 +33,7 @@ public class Food extends Product {
      * @param DISCOUNT_RATE BigDecimal - The current discount for this product
      * @param bestBefore LocalDate - Product shelf life
      */
-    public Food(int id, String name, BigDecimal price, Rating rating, BigDecimal DISCOUNT_RATE, LocalDate bestBefore) {
+    Food(final int id, final String name, final BigDecimal price, final Rating rating, final BigDecimal DISCOUNT_RATE, final LocalDate bestBefore) {
         super(id, name, price, rating, DISCOUNT_RATE);
         this.bestBefore = bestBefore;
     }
@@ -42,7 +45,7 @@ public class Food extends Product {
      * @param rating Rating - Current customer rating of the product
      * @param bestBefore LocalDate - Shelf life
      */
-    public Food(String name, BigDecimal price, Rating rating, LocalDate bestBefore) {
+    Food(final String name, final BigDecimal price, final Rating rating, final LocalDate bestBefore) {
         super(name, price, rating);
         this.bestBefore = bestBefore;
     }
@@ -57,22 +60,27 @@ public class Food extends Product {
     }
 
     @Override
-    public Food applyName(String name) {
+    public BigDecimal getDiscount() {
+        return this.bestBefore.isEqual(now()) ? getPrice().multiply(valueOf(0.50)).setScale(2, HALF_UP) : super.getDiscount();
+    }
+
+    @Override
+    public Food applyName(final String name) {
         return new Food(this.getId(), name, this.getPrice(), this.getRating(), valueOf(this.getPercentageDiscount()), this.getBestBefore());
     }
 
     @Override
-    public Food applyPrice(BigDecimal price) {
+    public Food applyPrice(final BigDecimal price) {
         return new Food(this.getId(), this.getName(), price, this.getRating(), valueOf(this.getPercentageDiscount()), this.getBestBefore());
     }
 
     @Override
-    public Food applyRating(Rating rating) {
+    public Food applyRating(final Rating rating) {
         return new Food(this.getId(), this.getName(), this.getPrice(), rating, valueOf(this.getPercentageDiscount()), this.getBestBefore());
     }
 
     @Override
-    public Food applyDiscountRate(int rate) {
+    public Food applyDiscountRate(final int rate) {
         return new Food(this.getId(), this.getName(), this.getPrice(), this.getRating(), valueOf(rate), this.getBestBefore());
     }
 }

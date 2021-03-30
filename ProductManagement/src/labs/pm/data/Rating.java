@@ -22,11 +22,11 @@ public enum Rating {
         this.ratingLevel = ratingLevel;
     }
 
-    public String getStars() {
+    String getStars() {
         return this.stars;
     }
 
-    public int getRatingLevel() {
+    int getRatingLevel() {
         return this.ratingLevel;
     }
 }

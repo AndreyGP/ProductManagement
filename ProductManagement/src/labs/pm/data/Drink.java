@@ -1,7 +1,13 @@
 package labs.pm.data;
 
 import java.math.BigDecimal;
+import java.time.LocalTime;
+
+import static java.math.BigDecimal.ZERO;
 import static java.math.BigDecimal.valueOf;
+import static java.time.LocalTime.now;
+import static java.time.LocalTime.of;
+import static java.math.RoundingMode.HALF_UP;
 /**
  * <p>ProductManagement Created by Home Work Studio AndrHey [andreigp]</p>
  * <p>FileName: Drink.java</p>
@@ -20,7 +26,7 @@ public class Drink extends Product {
      * @param rating Rating
      * @param DISCOUNT_RATE BigDecimal
      */
-    public Drink(int id, String name, BigDecimal price, Rating rating, BigDecimal DISCOUNT_RATE) {
+    Drink(final int id, final String name, final BigDecimal price, final Rating rating, final BigDecimal DISCOUNT_RATE) {
         super(id, name, price, rating, DISCOUNT_RATE);
     }
 
@@ -33,27 +39,35 @@ public class Drink extends Product {
      * @param price BigDecimal - Primary product interest
      * @param rating BigDecimal - The primary rating given to a new product
      */
-    public Drink(String name, BigDecimal price, Rating rating) {
+    Drink(final String name, final BigDecimal price, final Rating rating) {
         super(name, price, rating);
     }
 
     @Override
-    public Drink applyName(String name) {
+    public BigDecimal getDiscount() {
+        LocalTime now = now();
+        return now.isAfter(of(19, 30)) && now.isBefore(of(21, 30))
+                ? super.getDiscount()
+                : ZERO;
+    }
+
+    @Override
+    public Drink applyName(final String name) {
         return new Drink(this.getId(), name, this.getPrice(), this.getRating(), this.getDiscount());
     }
 
     @Override
-    public Drink applyPrice(BigDecimal price) {
+    public Drink applyPrice(final BigDecimal price) {
         return new Drink(this.getId(), this.getName(), price, this.getRating(), this.getDiscount());
     }
 
     @Override
-    public Drink applyRating(Rating rating) {
+    public Drink applyRating(final Rating rating) {
         return new Drink(this.getId(), this.getName(), this.getPrice(), rating, this.getDiscount());
     }
 
     @Override
-    public Drink applyDiscountRate(int rate) {
+    public Drink applyDiscountRate(final int rate) {
         return new Drink(this.getId(), this.getName(), this.getPrice(), this.getRating(), valueOf(rate));
     }
 }
