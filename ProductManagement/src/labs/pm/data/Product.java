@@ -10,8 +10,9 @@ import static labs.pm.data.Rating.*;
  * <p>ProductManagement Created by Home Work Studio AndrHey [andreigp]</p>
  * <p>FileName: Product.java</p>
  * <p>Date/time: 21 март 2021 in 18:18</p>
- *
  * @author Andrei G. Pastushenko
+ * 
+ * Parent class for all types of food items
  */
 
 abstract public class Product implements CommodityUnit {
@@ -160,6 +161,36 @@ abstract public class Product implements CommodityUnit {
     }
 
     @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        Product product = (Product) o;
+
+        if (id != product.id) return false;
+        if (percentageDiscount != product.percentageDiscount) return false;
+        if (!name.equals(product.name)) return false;
+        if (!price.equals(product.price)) return false;
+        if (rating != product.rating) return false;
+        if (!DISCOUNT_RATE.equals(product.DISCOUNT_RATE)) return false;
+
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = id;
+        result = 31 * result + name.hashCode();
+        result = 31 * result + price.hashCode();
+        result = 31 * result + rating.hashCode();
+        result = 31 * result + percentageDiscount;
+        result = 31 * result + DISCOUNT_RATE.hashCode();
+        return result;
+    }
+
+    //    abstract String getDiscription();
+
+    @Override
     public String toStringJSON() {
         return new StringBuffer()
                 .append("{")
@@ -171,4 +202,5 @@ abstract public class Product implements CommodityUnit {
                 .append("}")
                 .toString();
     }
+
 }
