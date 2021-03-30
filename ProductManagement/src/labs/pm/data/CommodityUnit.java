@@ -24,6 +24,9 @@ import java.math.BigDecimal;
  * ProductManagement Created by Home Work Studio AndrHey [andreigp]
  * FileName: CommodityUnit.java
  * Date/time: 29 март 2021 in 1:51
+ *
+ * A common interface for any trade item, describing the behavior common to all trade items. All inheritors
+ * of the interface must be immutable, creating a new instance based on the object whose state is being changed.
  */
 
 public interface CommodityUnit {
