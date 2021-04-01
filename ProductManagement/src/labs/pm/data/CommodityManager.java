@@ -73,20 +73,24 @@ public class CommodityManager {
 
     public void printProductReport() {
         StringBuilder report = new StringBuilder();
-        report.append(MessageFormat.format(resource.getString("product"),
+        report.append(defaultReportString());
+        report.append('\n');
+        if (review != null) report.append(reviewAvailable());
+        else report.append(resource.getString("no.reviews"));
+        System.out.println(report);
+    }
+
+    private String defaultReportString() {
+        return MessageFormat.format(resource.getString("product"),
                 product.getName(),
                 moneyFormat.format(product.getPrice()),
                 product.getRating().getStars(),
-                dateFormat.format(LocalDate.now())));
-        report.append('\n');
-        if (review != null) {
-            report.append(MessageFormat.format(resource.getString("review"),
-                    review.getRating().getStars(),
-                    review.getComment()));
-        } else {
-            report.append(resource.getString("no.reviews"));
-        }
-        report.append('\n');
-        System.out.println(report);
+                dateFormat.format(LocalDate.now()));
+    }
+
+    private String reviewAvailable() {
+        return MessageFormat.format(resource.getString("review"),
+                review.getRating().getStars(),
+                review.getComment());
     }
 }
