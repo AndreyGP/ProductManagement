@@ -20,8 +20,11 @@ public class Shop {
         CommodityManager cm = new CommodityManager();
         Product drink = cm.createNewProduct("Juice", 76.99, ProductType.DRINK);
         cm.printProductReport();
+        System.out.println();
+        
         drink = cm.reviewProduct(drink, Rating.FOUR_STARS, "А сочок-то ничёвский!");
         cm.printProductReport();
+        System.out.println();
 
         Product food = cm.createNewProduct("Chocolate", 99.89, ProductType.FOOD);
         Product nonfood = cm.createNewProduct("Fairy", 176.99, ProductType.NONFOOD);
