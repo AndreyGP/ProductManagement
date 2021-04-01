@@ -15,7 +15,7 @@ import static labs.pm.data.Rating.*;
  * Parent class for all types of food items
  */
 
-abstract public class Product implements CommodityUnit {
+abstract public class Product implements CommodityUnit, Rateable<Product> {
     /**
      * Assigns an ID [SKU] for each new product
      */
@@ -156,7 +156,7 @@ abstract public class Product implements CommodityUnit {
                 .append(": SKU " + getId())
                 .append("; Full price " + getPrice())
                 .append("; Your personal discount " + getDiscount())
-                .append("; Current consumer rating " + getRating())
+                .append("; Current consumer rating " + getRating().getStars())
                 .toString();
     }
 
@@ -188,8 +188,6 @@ abstract public class Product implements CommodityUnit {
         result = 31 * result + DISCOUNT_RATE.hashCode();
         return result;
     }
-
-    //    abstract String getDiscription();
 
     @Override
     public String toStringJSON() {

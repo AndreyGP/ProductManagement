@@ -69,7 +69,7 @@ public class NonFood extends Product {
     }
 
     @Override
-    public NonFood applyRating(final Rating rating) {
+    public NonFood applyRating(Rating rating) {
         return new NonFood(this.getId(), this.getName(), this.getPrice(), rating, this.getDiscount());
     }
 

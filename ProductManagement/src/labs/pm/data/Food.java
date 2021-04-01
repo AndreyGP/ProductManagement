@@ -75,7 +75,7 @@ public class Food extends Product {
     }
 
     @Override
-    public Food applyRating(final Rating rating) {
+    public Food applyRating(Rating rating) {
         return new Food(this.getId(), this.getName(), this.getPrice(), rating, valueOf(this.getPercentageDiscount()), this.getBestBefore());
     }
 

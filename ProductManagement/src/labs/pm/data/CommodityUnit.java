@@ -92,16 +92,6 @@ interface CommodityUnit {
      */
     CommodityUnit applyPrice(BigDecimal price);
 
-
-    /**
-     * <h2>A factory method</h2> <p>that creates a new instance of a commodity unit using the state of the current object,
-     * but with a new customer rating. Used to change the customer rating of a commodity unit unit in the database.</p>
-     *
-     * @param rating Rating - New correct customer rating
-     * @return CommodityUnit - New instance
-     */
-    CommodityUnit applyRating(Rating rating);
-
     /**
      * <h2>A factory method</h2> <p>that creates a new instance of a commodity unit using the state of the current object,
      * but with a new discount rate. Used to change the discount rate of a commodity unit unit in the database.</p>
