@@ -1,5 +1,6 @@
 # ProductManagement
 ## _Pet project within the course Java 11 SE: Programming Complete from Oracle_
+### _Project used features of Java 13 and Java 15
 
 - My apologies! In project...
 - My apologies! In project...
