@@ -59,26 +59,46 @@ public class Food extends Product {
         return this.bestBefore;
     }
 
+    /**
+     *
+     * @see CommodityUnit
+     */
     @Override
     public BigDecimal getDiscount() {
         return this.bestBefore.isEqual(now()) ? getPrice().multiply(valueOf(0.50)).setScale(2, HALF_UP) : super.getDiscount();
     }
 
+    /**
+     *
+     * @see CommodityUnit
+     */
     @Override
     public Food applyName(final String name) {
         return new Food(this.getId(), name, this.getPrice(), this.getRating(), valueOf(this.getPercentageDiscount()), this.getBestBefore());
     }
 
+    /**
+     *
+     * @see CommodityUnit
+     */
     @Override
     public Food applyPrice(final BigDecimal price) {
         return new Food(this.getId(), this.getName(), price, this.getRating(), valueOf(this.getPercentageDiscount()), this.getBestBefore());
     }
 
+    /**
+     *
+     * @see Rateable
+     */
     @Override
     public Food applyRating(Rating rating) {
         return new Food(this.getId(), this.getName(), this.getPrice(), rating, valueOf(this.getPercentageDiscount()), this.getBestBefore());
     }
 
+    /**
+     *
+     * @see CommodityUnit
+     */
     @Override
     public Food applyDiscountRate(final int rate) {
         return new Food(this.getId(), this.getName(), this.getPrice(), this.getRating(), valueOf(rate), this.getBestBefore());

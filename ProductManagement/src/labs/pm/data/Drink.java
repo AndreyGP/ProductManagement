@@ -44,6 +44,10 @@ public class Drink extends Product {
         super(name, price, rating);
     }
 
+    /**
+     *
+     * @see CommodityUnit
+     */
     @Override
     public BigDecimal getDiscount() {
         LocalTime now = now();
@@ -52,21 +56,37 @@ public class Drink extends Product {
                 : ZERO;
     }
 
+    /**
+     *
+     * @see CommodityUnit
+     */
     @Override
     public Drink applyName(final String name) {
         return new Drink(this.getId(), name, this.getPrice(), this.getRating(), this.getDiscount());
     }
 
+    /**
+     *
+     * @see CommodityUnit
+     */
     @Override
     public Drink applyPrice(final BigDecimal price) {
         return new Drink(this.getId(), this.getName(), price, this.getRating(), this.getDiscount());
     }
 
+    /**
+     *
+     * @see Rateable
+     */
     @Override
     public Drink applyRating(final Rating rating) {
         return new Drink(this.getId(), this.getName(), this.getPrice(), rating, this.getDiscount());
     }
 
+    /**
+     *
+     * @see CommodityUnit
+     */
     @Override
     public Drink applyDiscountRate(final int rate) {
         return new Drink(this.getId(), this.getName(), this.getPrice(), this.getRating(), valueOf(rate));

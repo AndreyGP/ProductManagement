@@ -57,22 +57,37 @@ public class NonFood extends Product {
         super(name, price, rating);
     }
 
-
+    /**
+     *
+     * @see CommodityUnit
+     */
     @Override
     public NonFood applyName(final String name) {
         return new NonFood(this.getId(), name, this.getPrice(), this.getRating(), this.getDiscount());
     }
 
+    /**
+     *
+     * @see CommodityUnit
+     */
     @Override
     public NonFood applyPrice(final BigDecimal price) {
         return new NonFood(this.getId(), this.getName(), price, this.getRating(), this.getDiscount());
     }
 
+    /**
+     *
+     * @see Rateable
+     */
     @Override
     public NonFood applyRating(Rating rating) {
         return new NonFood(this.getId(), this.getName(), this.getPrice(), rating, this.getDiscount());
     }
 
+    /**
+     *
+     * @see CommodityUnit
+     */
     @Override
     public NonFood applyDiscountRate(final int rate) {
         return new NonFood(this.getId(), this.getName(), this.getPrice(), this.getRating(), valueOf(rate));

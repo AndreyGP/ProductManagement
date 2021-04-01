@@ -51,6 +51,12 @@ public interface Rateable<T> {
         return getDefaultRating();
     }
 
+    /**
+     * <h2>Convertation int to Rating</h2>
+     * <p>The method of converting the numerical number of rating stars into the corresponding Rating type</p>
+     * @param stars int - count stars in rating commodity item (0 to 5)
+     * @return Rating type equivalent to the number of stars passed
+     */
     public static Rating convert(int stars) {
         return 5 >= stars && stars >= 0 ? Rating.values()[stars] : DEFAULT_RATING;
     }

@@ -111,31 +111,55 @@ abstract public class Product implements CommodityUnit, Rateable<Product> {
         this.DISCOUNT_RATE = valueOf(percentageDiscount / (double) 100);
     }
 
+    /**
+     *
+     * @see CommodityUnit
+     */
     @Override
     public int getId() {
         return id;
     }
 
+    /**
+     *
+     * @see CommodityUnit
+     */
     @Override
     public String getName() {
         return name;
     }
 
+    /**
+     *
+     * @see CommodityUnit
+     */
     @Override
     public BigDecimal getPrice() {
         return price;
     }
 
+    /**
+     *
+     * @see CommodityUnit
+     */
     @Override
     public BigDecimal getDiscount() {
         return price.multiply(DISCOUNT_RATE).setScale(2, HALF_UP);
     }
 
+    /**
+     *
+     * @see CommodityUnit
+     */
     @Override
     public int getPercentageDiscount() {
         return percentageDiscount;
     }
 
+    /**
+     *
+     * @see CommodityUnit
+     */
     @Override
     public Rating getRating() {
         return rating;
@@ -160,6 +184,10 @@ abstract public class Product implements CommodityUnit, Rateable<Product> {
                 .toString();
     }
 
+    /**
+     *
+     * @see Object
+     */
     @Override
     public boolean equals(final Object o) {
         if (this == o) return true;
@@ -178,6 +206,10 @@ abstract public class Product implements CommodityUnit, Rateable<Product> {
         return true;
     }
 
+    /**
+     *
+     * @see Object
+     */
     @Override
     public int hashCode() {
         int result = id;
@@ -189,6 +221,10 @@ abstract public class Product implements CommodityUnit, Rateable<Product> {
         return result;
     }
 
+    /**
+     *
+     * @see CommodityUnit
+     */
     @Override
     public String toStringJSON() {
         return new StringBuffer()
