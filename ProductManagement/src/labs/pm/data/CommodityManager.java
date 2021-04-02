@@ -23,8 +23,7 @@ import java.text.NumberFormat;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
-import java.util.Locale;
-import java.util.ResourceBundle;
+import java.util.*;
 
 import static java.math.BigDecimal.valueOf;
 import static java.time.LocalDate.now;
@@ -37,21 +36,22 @@ import static labs.pm.data.Rating.*;
  *
  * @author Andrei.G.Pastushenko
  * <p>Factory class for instantiating items from outside the package</p>
+ * <p>NOT FINAL REALISATION!!!</p>
  */
 
 public class CommodityManager {
-    private Product product;
-    private Review review;
+    private Map<Product, List<Review>> products;
     private Locale locale;
     private ResourceBundle resource;
     private DateTimeFormatter dateFormat;
     private NumberFormat moneyFormat;
 
-    public CommodityManager(Locale locale) {
+    public CommodityManager(final Locale locale) {
         this.locale = locale;
         resource = ResourceBundle.getBundle("labs.pm.data.productbundle", locale);
         dateFormat = DateTimeFormatter.ofLocalizedDate(FormatStyle.SHORT).localizedBy(locale);
         moneyFormat = NumberFormat.getCurrencyInstance(locale);
+        products = new HashMap<>();
     }
 
     public CommodityManager() {
@@ -60,27 +60,65 @@ public class CommodityManager {
 
     public Product createNewProduct(final String name, final double price, final ProductType productType) {
         return switch (productType) {
-            case FOOD -> product = new Food(name, valueOf(price), NOT_RATED, now().plusDays(7));
-            case DRINK -> product = new Drink(name, valueOf(price), NOT_RATED);
-            case NONFOOD -> product = new NonFood(name, valueOf(price), NOT_RATED);
+            case FOOD -> createNewFood(name, price);
+            case DRINK -> createNewDrink(name, price);
+            case NONFOOD -> createNewNonFood(name, price);
         };
     }
 
-    public Product reviewProduct(final Product product, final Rating rating, final String comment) {
-        review = new Review(rating, comment);
-        return this.product = product.applyRating(rating);
+    private Product createNewFood(final String name, final double price) {
+        Product product = new Food(name, valueOf(price), NOT_RATED, now().plusDays(7));
+        products.put(product, new ArrayList<>());
+        return product;
     }
 
-    public void printProductReport() {
+    private Product createNewDrink(final String name, final double price) {
+        Product product = new Drink(name, valueOf(price), NOT_RATED);
+        products.put(product, new ArrayList<>());
+        return product;
+    }
+
+    private Product createNewNonFood(final String name, final double price) {
+        Product product = new NonFood(name, valueOf(price), NOT_RATED);
+        products.put(product, new ArrayList<>());
+        return product;
+    }
+
+    public Product findProductById(final int id) {
+        for (Product product : products.keySet())
+            if (product.getId() == id) return product;
+        return null;
+    }
+
+    public Product reviewProduct(final int id, final Rating rating, final String comment) {
+        return reviewProduct(findProductById(id), rating, comment);
+    }
+
+    public Product reviewProduct(final Product product, final Rating rating, final String comment) {
+        List<Review> reviews = products.get(product);
+        products.remove(product, reviews);
+        reviews.add(new Review(rating, comment));
+        Collections.sort(reviews);
+        int sum = 0;
+        for (Review review : reviews) sum += review.getRating().ordinal();
+        Product newProduct = product.applyRating(Math.round((float) sum / reviews.size()));
+        products.put(newProduct, reviews);
+        return newProduct;
+    }
+
+    public void printProductReport(final int id) {
+        printProductReport(findProductById(id));
+    }
+
+    public void printProductReport(final Product product) {
         StringBuilder report = new StringBuilder();
-        report.append(defaultReportString());
-        report.append('\n');
-        if (review != null) report.append(reviewAvailable());
-        else report.append(resource.getString("no.reviews"));
+        report.append(defaultReportString(product)).append('\n');
+        if (products.get(product).isEmpty()) report.append(resource.getString("no.reviews")).append('\n');
+        else report.append(reviewAvailable(product));
         System.out.println(report);
     }
 
-    private String defaultReportString() {
+    private String defaultReportString(final Product product) {
         return MessageFormat.format(resource.getString("product"),
                 product.getName(),
                 moneyFormat.format(product.getPrice()),
@@ -88,9 +126,15 @@ public class CommodityManager {
                 dateFormat.format(LocalDate.now()));
     }
 
-    private String reviewAvailable() {
-        return MessageFormat.format(resource.getString("review"),
-                review.getRating().getStars(),
-                review.getComment());
+    private String reviewAvailable(Product product) {
+        StringBuilder txt = new StringBuilder();
+        for (Review review : products.get(product)) {
+            if (review == null) break;
+            txt.append(MessageFormat.format(resource.getString("review"),
+                    review.getRating().getStars(),
+                    review.getComment()));
+            txt.append('\n');
+        }
+        return txt.toString();
     }
 }

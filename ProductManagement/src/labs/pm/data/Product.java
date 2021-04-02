@@ -197,12 +197,6 @@ abstract public class Product implements CommodityUnit, Rateable<Product> {
         final Product product = (Product) o;
 
         if (id != product.id) return false;
-        if (percentageDiscount != product.percentageDiscount) return false;
-        if (!name.equals(product.name)) return false;
-        if (!price.equals(product.price)) return false;
-        if (rating != product.rating) return false;
-        if (!DISCOUNT_RATE.equals(product.DISCOUNT_RATE)) return false;
-
         return true;
     }
 
@@ -233,7 +227,7 @@ abstract public class Product implements CommodityUnit, Rateable<Product> {
                 .append(", title: \"" + getName() + "\"")
                 .append(", price: " + getPrice())
                 .append(", basic_discount: " + getDiscount())
-                .append(", current_consumer_rating: " + getRating().getRatingLevel())
+                .append(", current_consumer_rating: " + getRating().ordinal())
                 .append("}")
                 .toString();
     }

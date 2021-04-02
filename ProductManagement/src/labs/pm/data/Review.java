@@ -26,25 +26,53 @@ package labs.pm.data;
  * @author Andrei G. Pastushenko
  */
 
-public class Review {
+public class Review implements Comparable<Review>{
+    /**
+     * Current review rating
+     */
     private final Rating rating;
+    /**
+     * Current review comment
+     */
     private final String comment;
 
+    /**
+     * <p>Default constructor for every new product review</p>
+     * @param rating Rating - The number of stars that the consumer gave to the product
+     * @param comment String - Review of a product left by a consumer
+     */
     public Review(final Rating rating, final String comment) {
         this.rating = rating;
         this.comment = comment;
     }
 
+    /**
+     * <p>Review class API to get a rating of current consumer review</p>
+     * @return Rating
+     */
     public Rating getRating() {
         return rating;
     }
 
+    /**
+     * <p>Review class API to get a comment of current consumer review</p>
+     * @return String
+     */
     public String getComment() {
         return comment;
     }
 
+    /**
+     * <p>Stub for receiving JSON of the current revocation string. Not final!!!</p>
+     * @return String JSON format
+     */
     @Override
     public String toString() {
         return "Review: {rating: " + getRating() + ", comment: " + getComment() + "}";
+    }
+
+    @Override
+    public int compareTo(Review other) {
+        return other.getRating().ordinal() - this.getRating().ordinal();
     }
 }
