@@ -19,29 +19,48 @@ public class Shop {
     public static void main(String[] args) {
         CommodityManager cm = new CommodityManager();
         Product drink = cm.createNewProduct("Juice", 76.99, ProductType.DRINK);
-        cm.printProductReport();
-        System.out.println();
-        
+        cm.printProductReport(drink);
+        drink = cm.reviewProduct(drink, Rating.TWO_STARS, "Бычья моча!");
         drink = cm.reviewProduct(drink, Rating.FOUR_STARS, "А сочок-то ничёвский!");
-        cm.printProductReport();
-        System.out.println();
+        drink = cm.reviewProduct(drink, Rating.FIVE_STARS, "Отличный сок!");
+        drink = cm.reviewProduct(drink, Rating.THREE_STARS, "Ну тетрапак дешёвый я и сам себе налью дешевле!");
+        drink = cm.reviewProduct(drink, Rating.ONE_STARS, "В соке была муха!");
+        drink = cm.reviewProduct(drink, Rating.FOUR_STARS, "Не свежевыжатый, но тоже норм!");
+        drink = cm.reviewProduct(drink, Rating.FOUR_STARS, "Пробовал лучше, но и этот норм!");
+        drink = cm.reviewProduct(drink, Rating.FIVE_STARS, "Сегодня был свежевыжатый!");
+        drink = cm.reviewProduct(drink, Rating.THREE_STARS, "Сегодня не свежевыжатый был!");
+        drink = cm.reviewProduct(drink, Rating.FOUR_STARS, "Выше среднего сок!");
+        cm.printProductReport(drink);
 
-        Product food = cm.createNewProduct("Chocolate", 99.89, ProductType.FOOD);
-        Product nonfood = cm.createNewProduct("Fairy", 176.99, ProductType.NONFOOD);
 
-        System.out.println(drink.toString());
-        System.out.println(food.toString());
-        System.out.println(nonfood.toString());
+        int FoodId = cm.createNewProduct("Cookie", 76.99, ProductType.FOOD).getId();
+        cm.printProductReport(FoodId);
+        cm.reviewProduct(FoodId, Rating.TWO_STARS, "Пресное и крошится!");
+        cm.reviewProduct(FoodId, Rating.THREE_STARS, "Только со сладким чаем можно есть!");
+        cm.reviewProduct(FoodId, Rating.FOUR_STARS, "За такую цену пойдёт!");
+        cm.reviewProduct(FoodId, Rating.THREE_STARS, "Дешёвый средняк!");
+        cm.reviewProduct(FoodId, Rating.ONE_STARS, "Кто это ещё покупает?!");
+        cm.reviewProduct(FoodId, Rating.FOUR_STARS, "Ну так себе, а упаковка красивая!");
+        cm.reviewProduct(FoodId, Rating.FOUR_STARS, "Дешёвое и диетическое!");
+        cm.reviewProduct(FoodId, Rating.FIVE_STARS, "Голубей кормить самое то!");
+        cm.reviewProduct(FoodId, Rating.THREE_STARS, "Как совдеповские галеты!");
+        cm.reviewProduct(FoodId, Rating.TWO_STARS, "Вспомнил далёкое серое детство!");
+        cm.printProductReport(FoodId);
 
-        Food food1 = (Food) food;
-        System.out.println(food1.getBestBefore());
-        System.out.println(((Food) food).getBestBefore());
+        int nonFoodId = cm.createNewProduct("Fairy", 76.99, ProductType.FOOD).getId();
+        cm.printProductReport(nonFoodId);
+        cm.reviewProduct(nonFoodId, Rating.FOUR_STARS, "Хорошее средство!");
+        cm.reviewProduct(nonFoodId, Rating.THREE_STARS, "Я из Виллабаджо!");
+        cm.reviewProduct(nonFoodId, Rating.FOUR_STARS, "За такую цену пойдёт!");
+        cm.reviewProduct(nonFoodId, Rating.FOUR_STARS, "Не то уже, но ещё хорошо отмывает!");
+        cm.reviewProduct(nonFoodId, Rating.FIVE_STARS, "Я из Вилларибо!");
+        cm.reviewProduct(nonFoodId, Rating.FOUR_STARS, "Ну так себе, а упаковка красивая!");
+        cm.reviewProduct(nonFoodId, Rating.FOUR_STARS, "Не сушит руки!");
+        cm.reviewProduct(nonFoodId, Rating.FIVE_STARS, "С аллоэ прям лучше не найти!");
+        cm.reviewProduct(nonFoodId, Rating.FIVE_STARS, "Я тоже из Вилларибо!");
+        cm.reviewProduct(nonFoodId, Rating.FIVE_STARS, "Я даже похудела, как оно борется с жиром!");
+        cm.printProductReport(nonFoodId);
 
-        Product choko = (Food) food.applyRating(5);
-        System.out.println(choko);
-        System.out.println(choko instanceof Food);
-        
-//        Product failed = new Drink("Water", BigDecimal.valueOf(99.00), Rating.NOT_RATED);
+        cm.printProductReport(1);
     }
-
 }
