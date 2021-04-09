@@ -42,33 +42,72 @@ import static labs.pm.data.Rating.*;
 public class CommodityManager {
     private Map<Product, List<Review>> products = new HashMap<>();
     private ResourceFormatter formatter;
-
+    /**
+     * HashMap containing all the localizations supported by the application
+     * Not the final option!
+     *
+     * TO DO: Add a nesting level so that the getSupportedLocales () method displays localizations as:
+     * "English UK"
+     * "English US"
+     * "Русский РФ"
+     * etc.
+     */
     private static Map<String, ResourceFormatter> formatters = Map.of(
             "en-US", new ResourceFormatter(Locale.US),
             "en-UK", new ResourceFormatter(Locale.UK),
             "ru-RU", new ResourceFormatter(new Locale("ru", "RU"))
     );
 
-    public CommodityManager(final Locale locale) {
-        this(locale.toLanguageTag());
-    }
-
-    public CommodityManager(final String languageTag) {
-        changeLocal(languageTag);
-    }
-
-    public void changeLocal(final String languageTag) {
-        formatter = formatters.getOrDefault(languageTag, formatters.get("ru-RU"));
-    }
-
-    public static Set<String> getSupportedLocales() {
-        return formatters.keySet();
-    }
-
+    /**
+     * Default constructor method. Sets default locale
+     */
     public CommodityManager() {
         this(Locale.getDefault());
     }
 
+    /**
+     * <p>Constructor method sets the locale of the class to the passed parameter.
+     * Pass the locale string tag to the overloaded constructor</p>
+     * @param locale Locale - The specified locale Locale type. Effectively the final variable of the method.
+     */
+    public CommodityManager(final Locale locale) {
+        this(locale.toLanguageTag());
+    }
+
+    /**
+     * <p>Constructor method sets the locale of the class to the passed parameter.
+     * Sets the locale via the changeLocal () method</p>
+     * @param languageTag String - The specified locale String type. Effectively the final variable of the method.
+     */
+    public CommodityManager(final String languageTag) {
+        changeLocal(languageTag);
+    }
+
+    /**
+     * <p>Changes the current or sets the original (when instantiating the class) locale</p>
+     * @param languageTag String - Locale string tag
+     */
+    public void changeLocal(final String languageTag) {
+        formatter = formatters.getOrDefault(languageTag, formatters.get("ru-RU"));
+    }
+
+    /**
+     * <p>Returns a set of string tags of all locales supported by the application
+     * String tags are keys of HashMap</p>
+     * @return Set - All supported locales
+     * @see HashMap HashMap::keySet()
+     */
+    public static Set<String> getSupportedLocales() {
+        return formatters.keySet();
+    }
+
+    /**
+     * <p>Returns a new product object according to the passed parameters and the required Product type</p>
+     * @param name String - new product name
+     * @param price double - original price of a new product
+     * @param productType ProductType - the specific type of product being created
+     * @return new ProductType reference
+     */
     public Product createNewProduct(final String name, final double price, final ProductType productType) {
         return switch (productType) {
             case FOOD -> createNewFood(name, price);
@@ -77,18 +116,36 @@ public class CommodityManager {
         };
     }
 
+    /**
+     * Helper method for createNewProduct ()
+     * @param name String - new Food name
+     * @param price double - original price of a new product
+     * @return new Food reference
+     */
     private Product createNewFood(final String name, final double price) {
         Product product = new Food(name, valueOf(price), NOT_RATED, now().plusDays(7));
         products.put(product, new ArrayList<>());
         return product;
     }
 
+    /**
+     * Helper method for createNewProduct ()
+     * @param name String - new Drink name
+     * @param price double - original price of a new product
+     * @return new Drink reference
+     */
     private Product createNewDrink(final String name, final double price) {
         Product product = new Drink(name, valueOf(price), NOT_RATED);
         products.put(product, new ArrayList<>());
         return product;
     }
 
+    /**
+     * Helper method for createNewProduct ()
+     * @param name String - new NonFood name
+     * @param price double - original price of a new product
+     * @return new NonFood reference
+     */
     private Product createNewNonFood(final String name, final double price) {
         Product product = new NonFood(name, valueOf(price), NOT_RATED);
         products.put(product, new ArrayList<>());
@@ -133,8 +190,7 @@ public class CommodityManager {
         List<Product> productList = new ArrayList<>(products.keySet());
         productList.sort(sorter);
         StringBuilder text = new StringBuilder();
-        for (Product product : productList)
-            text.append(formatter.formatProduct(product)).append('\n');
+        productList.forEach(product -> text.append(formatter.formatProduct(product)).append('\n'));
         System.out.println(text);
     }
 
