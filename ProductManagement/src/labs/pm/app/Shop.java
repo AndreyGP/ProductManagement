@@ -5,6 +5,7 @@ import labs.pm.data.*;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Comparator;
+import java.util.function.Predicate;
 
 
 /**
@@ -18,6 +19,10 @@ import java.util.Comparator;
 
 public class Shop {
     public static void main(String[] args) {
+        Predicate<Product> negativRating = p -> p.getRating().ordinal() <= 3;
+        Predicate<Product> positiveRating = p -> p.getRating().ordinal() > 3;
+        Predicate<Product> allRating = p -> true;
+
         Comparator<Product> ratingSorter = (p1, p2) -> p2.getRating().ordinal() - p1.getRating().ordinal();
         Comparator<Product> priceSorter = (p1, p2) -> p2.getPrice().compareTo(p1.getPrice());
         Comparator<Product> idSorter = (p1, p2) -> p1.getId() - p2.getId();
@@ -29,7 +34,7 @@ public class Shop {
         System.out.println();
 
         CommodityManager cm = new CommodityManager("ru-RU");
-        cm.printProducts(ratingSorter);
+        cm.printProducts(allRating, ratingSorter);
 
         Product drink = cm.createNewProduct("Juice", 76.99, ProductType.DRINK);
 //        cm.printProductReport(drink);
@@ -79,10 +84,10 @@ public class Shop {
 //        cm.printProductReport(1);
 
 
-        cm.printProducts(ratingSorter);
-        cm.printProducts(priceSorter);
-        cm.printProducts(idSorter);
-        cm.printProducts(ratingThenPriceAscSorter);
-        cm.printProducts(ratingThenPriceDescSorter);
+        cm.printProducts(positiveRating, ratingSorter);
+        cm.printProducts(allRating, priceSorter);
+        cm.printProducts(negativRating, idSorter);
+        cm.printProducts(allRating, ratingThenPriceAscSorter);
+        cm.printProducts(allRating, ratingThenPriceDescSorter);
     }
 }
