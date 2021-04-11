@@ -167,9 +167,11 @@ public class CommodityManager {
         products.remove(product, reviews);
         reviews.add(new Review(rating, comment));
         Collections.sort(reviews);
-        int sum = 0;
-        for (Review review : reviews) sum += review.getRating().ordinal();
-        Product newProduct = product.applyRating(Math.round((float) sum / reviews.size()));
+        double average = reviews.stream()
+                .mapToInt(review -> review.getRating().ordinal())
+                .average()
+                .getAsDouble();
+        Product newProduct = product.applyRating((int) Math.round(average));
         products.put(newProduct, reviews);
         return newProduct;
     }
@@ -187,20 +189,20 @@ public class CommodityManager {
     }
 
     public void printProducts(Comparator<Product> sorter) {
-        List<Product> productList = new ArrayList<>(products.keySet());
-        productList.sort(sorter);
         StringBuilder text = new StringBuilder();
-        productList.forEach(product -> text.append(formatter.formatProduct(product)).append('\n'));
+        products.keySet()
+                .stream()
+                .sorted(sorter)
+                .forEach(p -> text.append(formatter.formatProduct(p)).append('\n'));
         System.out.println(text);
     }
 
     private String reviewAvailable(Product product) {
         StringBuilder txt = new StringBuilder();
-        for (Review review : products.get(product)) {
-            if (review == null) break;
-            txt.append(formatter.formatReviews(review));
-            txt.append('\n');
-        }
+        products.get(product)
+                .stream()
+                .takeWhile(review -> review != null)
+                .forEach(review -> txt.append(formatter.formatReviews(review)).append('\n'));
         return txt.toString();
     }
 
