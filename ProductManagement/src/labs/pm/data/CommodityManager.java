@@ -153,9 +153,11 @@ public class CommodityManager {
     }
 
     public Product findProductById(final int id) {
-        for (Product product : products.keySet())
-            if (product.getId() == id) return product;
-        return null;
+        return products.keySet()
+                .stream()
+                .filter(product -> product.getId() == id)
+                .findFirst()
+                .orElseGet(() -> null);
     }
 
     public Product reviewProduct(final int id, final Rating rating, final String comment) {
@@ -167,11 +169,16 @@ public class CommodityManager {
         products.remove(product, reviews);
         reviews.add(new Review(rating, comment));
         Collections.sort(reviews);
-        double average = reviews.stream()
-                .mapToInt(review -> review.getRating().ordinal())
-                .average()
-                .getAsDouble();
-        Product newProduct = product.applyRating((int) Math.round(average));
+        Product newProduct = product.applyRating(
+                Rateable.convert(
+                        (int) Math.round(
+                                reviews.stream()
+                                        .mapToInt(review -> review.getRating().ordinal())
+                                        .average()
+                                        .orElse(0)
+                        )
+                )
+        );
         products.put(newProduct, reviews);
         return newProduct;
     }
@@ -194,7 +201,8 @@ public class CommodityManager {
                 .stream()
                 .sorted(sorter)
                 .forEach(p -> text.append(formatter.formatProduct(p)).append('\n'));
-        System.out.println(text);
+        if (!text.isEmpty()) System.out.println(text);
+        else System.out.println("No product items");
     }
 
     private String reviewAvailable(Product product) {
