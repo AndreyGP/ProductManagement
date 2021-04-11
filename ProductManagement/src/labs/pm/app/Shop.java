@@ -18,11 +18,19 @@ import java.util.Comparator;
 
 public class Shop {
     public static void main(String[] args) {
+        Comparator<Product> ratingSorter = (p1, p2) -> p2.getRating().ordinal() - p1.getRating().ordinal();
+        Comparator<Product> priceSorter = (p1, p2) -> p2.getPrice().compareTo(p1.getPrice());
+        Comparator<Product> idSorter = (p1, p2) -> p1.getId() - p2.getId();
+        Comparator<Product> ratingThenPriceAscSorter = ratingSorter.thenComparing(priceSorter);
+        Comparator<Product> ratingThenPriceDescSorter = ratingThenPriceAscSorter.reversed();
+
         System.out.println("This app supports the following languages:");
         CommodityManager.getSupportedLocales().forEach(System.out::println);
         System.out.println();
 
         CommodityManager cm = new CommodityManager("ru-RU");
+        cm.printProducts(ratingSorter);
+
         Product drink = cm.createNewProduct("Juice", 76.99, ProductType.DRINK);
 //        cm.printProductReport(drink);
         drink = cm.reviewProduct(drink, Rating.TWO_STARS, "Бычья моча!");
@@ -52,7 +60,7 @@ public class Shop {
         cm.reviewProduct(FoodId, Rating.TWO_STARS, "Вспомнил далёкое серое детство!");
 //        cm.printProductReport(FoodId);
 
-        cm.changeLocal("en-US");
+//        cm.changeLocal("en-US");
 
         int nonFoodId = cm.createNewProduct("Fairy", 79.99, ProductType.FOOD).getId();
 //        cm.printProductReport(nonFoodId);
@@ -70,13 +78,11 @@ public class Shop {
 
 //        cm.printProductReport(1);
 
-        Comparator<Product> ratingSorter = (p1, p2) -> p2.getRating().ordinal() - p1.getRating().ordinal();
-        Comparator<Product> priceSorter = (p1, p2) -> p2.getPrice().compareTo(p1.getPrice());
-        Comparator<Product> idSorter = (p1, p2) -> p1.getId() - p2.getId();
+
         cm.printProducts(ratingSorter);
         cm.printProducts(priceSorter);
         cm.printProducts(idSorter);
-        cm.printProducts(ratingSorter.thenComparing(priceSorter));
-        cm.printProducts(ratingSorter.thenComparing(priceSorter).reversed());
+        cm.printProducts(ratingThenPriceAscSorter);
+        cm.printProducts(ratingThenPriceDescSorter);
     }
 }
