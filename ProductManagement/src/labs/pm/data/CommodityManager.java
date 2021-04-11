@@ -24,6 +24,7 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static java.math.BigDecimal.valueOf;
 import static java.time.LocalDate.now;
@@ -45,7 +46,7 @@ public class CommodityManager {
     /**
      * HashMap containing all the localizations supported by the application
      * Not the final option!
-     *
+     * <p>
      * TO DO: Add a nesting level so that the getSupportedLocales () method displays localizations as:
      * "English UK"
      * "English US"
@@ -68,6 +69,7 @@ public class CommodityManager {
     /**
      * <p>Constructor method sets the locale of the class to the passed parameter.
      * Pass the locale string tag to the overloaded constructor</p>
+     *
      * @param locale Locale - The specified locale Locale type. Effectively the final variable of the method.
      */
     public CommodityManager(final Locale locale) {
@@ -77,6 +79,7 @@ public class CommodityManager {
     /**
      * <p>Constructor method sets the locale of the class to the passed parameter.
      * Sets the locale via the changeLocal () method</p>
+     *
      * @param languageTag String - The specified locale String type. Effectively the final variable of the method.
      */
     public CommodityManager(final String languageTag) {
@@ -85,6 +88,7 @@ public class CommodityManager {
 
     /**
      * <p>Changes the current or sets the original (when instantiating the class) locale</p>
+     *
      * @param languageTag String - Locale string tag
      */
     public void changeLocal(final String languageTag) {
@@ -94,6 +98,7 @@ public class CommodityManager {
     /**
      * <p>Returns a set of string tags of all locales supported by the application
      * String tags are keys of HashMap</p>
+     *
      * @return Set - All supported locales
      * @see HashMap HashMap::keySet()
      */
@@ -103,8 +108,9 @@ public class CommodityManager {
 
     /**
      * <p>Returns a new product object according to the passed parameters and the required Product type</p>
-     * @param name String - new product name
-     * @param price double - original price of a new product
+     *
+     * @param name        String - new product name
+     * @param price       double - original price of a new product
      * @param productType ProductType - the specific type of product being created
      * @return new ProductType reference
      */
@@ -118,7 +124,8 @@ public class CommodityManager {
 
     /**
      * Helper method for createNewProduct ()
-     * @param name String - new Food name
+     *
+     * @param name  String - new Food name
      * @param price double - original price of a new product
      * @return new Food reference
      */
@@ -130,7 +137,8 @@ public class CommodityManager {
 
     /**
      * Helper method for createNewProduct ()
-     * @param name String - new Drink name
+     *
+     * @param name  String - new Drink name
      * @param price double - original price of a new product
      * @return new Drink reference
      */
@@ -142,7 +150,8 @@ public class CommodityManager {
 
     /**
      * Helper method for createNewProduct ()
-     * @param name String - new NonFood name
+     *
+     * @param name  String - new NonFood name
      * @param price double - original price of a new product
      * @return new NonFood reference
      */
@@ -175,10 +184,7 @@ public class CommodityManager {
                                 reviews.stream()
                                         .mapToInt(review -> review.getRating().ordinal())
                                         .average()
-                                        .orElse(0)
-                        )
-                )
-        );
+                                        .orElse(0))));
         products.put(newProduct, reviews);
         return newProduct;
     }
@@ -190,8 +196,14 @@ public class CommodityManager {
     public void printProductReport(final Product product) {
         StringBuilder report = new StringBuilder();
         report.append(formatter.formatProduct(product)).append('\n');
-        if (products.get(product).isEmpty()) report.append(formatter.getText("no.reviews")).append('\n');
-        else report.append(reviewAvailable(product));
+        List<Review> reviews = products.get(product);
+        if (reviews.isEmpty()) {
+            report.append(formatter.getText("no.reviews")).append('\n');
+        } else {
+            report.append(reviews.stream()
+                    .map(review -> formatter.formatReviews(review) + "\n")
+                    .collect(Collectors.joining()));
+        }
         System.out.println(report);
     }
 
@@ -203,15 +215,6 @@ public class CommodityManager {
                 .forEach(p -> text.append(formatter.formatProduct(p)).append('\n'));
         if (!text.isEmpty()) System.out.println(text);
         else System.out.println("No product items");
-    }
-
-    private String reviewAvailable(Product product) {
-        StringBuilder txt = new StringBuilder();
-        products.get(product)
-                .stream()
-                .takeWhile(review -> review != null)
-                .forEach(review -> txt.append(formatter.formatReviews(review)).append('\n'));
-        return txt.toString();
     }
 
     private static class ResourceFormatter {
