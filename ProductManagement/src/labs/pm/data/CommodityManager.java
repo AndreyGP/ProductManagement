@@ -24,6 +24,7 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
 import java.util.*;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import static java.math.BigDecimal.valueOf;
@@ -201,17 +202,18 @@ public class CommodityManager {
             report.append(formatter.getText("no.reviews")).append('\n');
         } else {
             report.append(reviews.stream()
-                    .map(review -> formatter.formatReviews(review) + "\n")
+                    .map(review -> formatter.formatReviews(review) + '\n')
                     .collect(Collectors.joining()));
         }
         System.out.println(report);
     }
 
-    public void printProducts(Comparator<Product> sorter) {
+    public void printProducts(Predicate<Product> filter, Comparator<Product> sorter) {
         StringBuilder text = new StringBuilder();
         products.keySet()
                 .stream()
                 .sorted(sorter)
+                .filter(filter)
                 .forEach(p -> text.append(formatter.formatProduct(p)).append('\n'));
         if (!text.isEmpty()) System.out.println(text);
         else System.out.println("No product items");
