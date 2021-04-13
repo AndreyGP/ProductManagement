@@ -18,6 +18,8 @@
 
 package labs.pm.data;
 
+import labs.pm.exceptions.CommodityManagerException;
+
 import java.text.MessageFormat;
 import java.text.NumberFormat;
 import java.time.LocalDate;
@@ -25,6 +27,8 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
 import java.util.*;
 import java.util.function.Predicate;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 import static java.math.BigDecimal.valueOf;
@@ -57,8 +61,9 @@ public class CommodityManager {
     private static Map<String, ResourceFormatter> formatters = Map.of(
             "en-US", new ResourceFormatter(Locale.US),
             "en-UK", new ResourceFormatter(Locale.UK),
-            "ru-RU", new ResourceFormatter(new Locale("ru", "RU"))
-    );
+            "ru-RU", new ResourceFormatter(new Locale("ru", "RU")));
+
+    private static Logger logger = Logger.getLogger(CommodityManager.class.getName());
 
     /**
      * Default constructor method. Sets default locale
@@ -105,6 +110,19 @@ public class CommodityManager {
      */
     public static Set<String> getSupportedLocales() {
         return formatters.keySet();
+    }
+
+    /**
+     * @return
+     */
+    public Map<String, String> getDiscounts() {
+        return products.keySet()
+                .stream()
+                .collect(Collectors.groupingBy(
+                        product -> product.getName() + "\t" + product.getRating().getStars(),
+                        Collectors.collectingAndThen(
+                                Collectors.summingDouble(product -> product.getDiscount().doubleValue()),
+                                discount -> formatter.moneyFormat.format(discount))));
     }
 
     /**
@@ -162,16 +180,22 @@ public class CommodityManager {
         return product;
     }
 
-    public Product findProductById(final int id) {
-        return products.keySet()
+    public Product findProductById(final int id) throws CommodityManagerException {
+        return products
+                .keySet()
                 .stream()
                 .filter(product -> product.getId() == id)
                 .findFirst()
-                .orElseGet(() -> null);
+                .orElseThrow(() -> new CommodityManagerException("Wrong! Product item with id " + id + " no such!"));
     }
 
     public Product reviewProduct(final int id, final Rating rating, final String comment) {
-        return reviewProduct(findProductById(id), rating, comment);
+        try {
+            return reviewProduct(findProductById(id), rating, comment);
+        } catch (CommodityManagerException e) {
+            logger.log(Level.INFO, e.getMessage());
+        }
+        return null;
     }
 
     public Product reviewProduct(final Product product, final Rating rating, final String comment) {
@@ -191,10 +215,16 @@ public class CommodityManager {
     }
 
     public void printProductReport(final int id) {
-        printProductReport(findProductById(id));
+        try {
+            printProductReport(findProductById(id));
+        } catch (CommodityManagerException e) {
+            logger.log(Level.INFO, e.getLocalizedMessage() + "\n");
+            System.out.println(e.getMessage() + "\n");
+        }
     }
 
     public void printProductReport(final Product product) {
+//        if (product != null) {
         StringBuilder report = new StringBuilder();
         report.append(formatter.formatProduct(product)).append('\n');
         List<Review> reviews = products.get(product);
@@ -206,17 +236,21 @@ public class CommodityManager {
                     .collect(Collectors.joining()));
         }
         System.out.println(report);
+//
+//        } else {
+//            System.out.println("Wrong! No such product item!");
+//        }
     }
 
     public void printProducts(Predicate<Product> filter, Comparator<Product> sorter) {
-        StringBuilder text = new StringBuilder();
-        products.keySet()
+        String text = products.keySet()
                 .stream()
                 .sorted(sorter)
                 .filter(filter)
-                .forEach(p -> text.append(formatter.formatProduct(p)).append('\n'));
-        if (!text.isEmpty()) System.out.println(text);
-        else System.out.println("No product items");
+                .map(p -> p.toString())
+                .collect(Collectors.joining("\n"));
+        if (!text.isEmpty()) System.out.println(text + "\n");
+        else System.out.println("No product items" + "\n");
     }
 
     private static class ResourceFormatter {
