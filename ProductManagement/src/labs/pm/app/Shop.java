@@ -5,6 +5,7 @@ import labs.pm.data.*;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Comparator;
+import java.util.Map;
 import java.util.function.Predicate;
 
 
@@ -19,9 +20,9 @@ import java.util.function.Predicate;
 
 public class Shop {
     public static void main(String[] args) {
-        Predicate<Product> negativRating = p -> p.getRating().ordinal() <= 3;
-        Predicate<Product> positiveRating = p -> p.getRating().ordinal() > 3;
-        Predicate<Product> allRating = p -> true;
+        Predicate<Product> negativeRatingFilter = p -> p.getRating().ordinal() <= 3;
+        Predicate<Product> positiveRatingFilter = p -> p.getRating().ordinal() > 3;
+        Predicate<Product> allRatingFilter = p -> true;
 
         Comparator<Product> ratingSorter = (p1, p2) -> p2.getRating().ordinal() - p1.getRating().ordinal();
         Comparator<Product> priceSorter = (p1, p2) -> p2.getPrice().compareTo(p1.getPrice());
@@ -31,23 +32,22 @@ public class Shop {
 
         System.out.println("This app supports the following languages:");
         CommodityManager.getSupportedLocales().forEach(System.out::println);
-        System.out.println();
 
         CommodityManager cm = new CommodityManager("ru-RU");
-        cm.printProducts(allRating, ratingSorter);
+        cm.printProducts(allRatingFilter, ratingSorter);
 
         Product drink = cm.createNewProduct("Juice", 76.99, ProductType.DRINK);
 //        cm.printProductReport(drink);
         drink = cm.reviewProduct(drink, Rating.TWO_STARS, "Бычья моча!");
-        drink = cm.reviewProduct(drink, Rating.FOUR_STARS, "А сочок-то ничёвский!");
-        drink = cm.reviewProduct(drink, Rating.FIVE_STARS, "Отличный сок!");
-        drink = cm.reviewProduct(drink, Rating.THREE_STARS, "Ну тетрапак дешёвый я и сам себе налью дешевле!");
-        drink = cm.reviewProduct(drink, Rating.ONE_STARS, "В соке была муха!");
-        drink = cm.reviewProduct(drink, Rating.FOUR_STARS, "Не свежевыжатый, но тоже норм!");
-        drink = cm.reviewProduct(drink, Rating.FOUR_STARS, "Пробовал лучше, но и этот норм!");
-        drink = cm.reviewProduct(drink, Rating.FIVE_STARS, "Сегодня был свежевыжатый!");
-        drink = cm.reviewProduct(drink, Rating.THREE_STARS, "Сегодня не свежевыжатый был!");
-        cm.reviewProduct(drink, Rating.FOUR_STARS, "Выше среднего сок!");
+        drink = cm.reviewProduct(drink, Rating.TWO_STARS, "А сочок-то ничёвский!");
+        drink = cm.reviewProduct(drink, Rating.TWO_STARS, "Отличный сок!");
+        drink = cm.reviewProduct(drink, Rating.TWO_STARS, "Ну тетрапак дешёвый я и сам себе налью дешевле!");
+        drink = cm.reviewProduct(drink, Rating.TWO_STARS, "В соке была муха!");
+        drink = cm.reviewProduct(drink, Rating.TWO_STARS, "Не свежевыжатый, но тоже норм!");
+        drink = cm.reviewProduct(drink, Rating.TWO_STARS, "Пробовал лучше, но и этот норм!");
+        drink = cm.reviewProduct(drink, Rating.TWO_STARS, "Сегодня был свежевыжатый!");
+        drink = cm.reviewProduct(drink, Rating.TWO_STARS, "Сегодня не свежевыжатый был!");
+        cm.reviewProduct(drink, Rating.TWO_STARS, "Выше среднего сок!");
 //        cm.printProductReport(drink);
 
 
@@ -80,14 +80,14 @@ public class Shop {
         cm.reviewProduct(nonFoodId, Rating.FIVE_STARS, "Я тоже из Вилларибо!");
         cm.reviewProduct(nonFoodId, Rating.FIVE_STARS, "Я даже похудела, как оно борется с жиром!");
 //        cm.printProductReport(nonFoodId);
+        cm.printProductReport(7);
 
-//        cm.printProductReport(1);
+//        cm.printProducts(positiveRatingFilter, ratingSorter);
+//        cm.printProducts(allRatingFilter, priceSorter);
+//        cm.printProducts(negativeRatingFilter, idSorter);
+//        cm.printProducts(allRatingFilter, ratingThenPriceAscSorter);
+//        cm.printProducts(allRatingFilter, ratingThenPriceDescSorter);
 
-
-        cm.printProducts(positiveRating, ratingSorter);
-        cm.printProducts(allRating, priceSorter);
-        cm.printProducts(negativRating, idSorter);
-        cm.printProducts(allRating, ratingThenPriceAscSorter);
-        cm.printProducts(allRating, ratingThenPriceDescSorter);
+        cm.getDiscounts().forEach((nameAndRating, discount) -> System.out.println(nameAndRating + "\t" + discount));
     }
 }
