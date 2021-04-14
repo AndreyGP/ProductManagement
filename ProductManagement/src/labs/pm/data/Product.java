@@ -1,6 +1,7 @@
 package labs.pm.data;
 
 import java.math.BigDecimal;
+import java.util.Comparator;
 
 import static java.math.RoundingMode.HALF_UP;
 import static java.math.BigDecimal.valueOf;
@@ -10,8 +11,9 @@ import static labs.pm.data.Rating.*;
  * <p>ProductManagement Created by Home Work Studio AndrHey [andreigp]</p>
  * <p>FileName: Product.java</p>
  * <p>Date/time: 21 март 2021 in 18:18</p>
- * @author Andrei G. Pastushenko
  *
+ * @author Andrei G. Pastushenko
+ * <p>
  * Parent class for all types of food items
  */
 
@@ -52,6 +54,10 @@ abstract public class Product implements CommodityUnit, Rateable<Product> {
      * Discount amount for the current product
      */
     private final BigDecimal DISCOUNT_RATE;
+
+    /**
+     * Class constructors block
+     */
 
     /**
      * <h2>Parameterless constructor.</h2> <p>Sets "null" values to the fields of the class. Used for debugging.</p>
@@ -112,7 +118,10 @@ abstract public class Product implements CommodityUnit, Rateable<Product> {
     }
 
     /**
-     *
+     * Getters block
+     */
+
+    /**
      * @see CommodityUnit
      */
     @Override
@@ -121,7 +130,6 @@ abstract public class Product implements CommodityUnit, Rateable<Product> {
     }
 
     /**
-     *
      * @see CommodityUnit
      */
     @Override
@@ -130,7 +138,6 @@ abstract public class Product implements CommodityUnit, Rateable<Product> {
     }
 
     /**
-     *
      * @see CommodityUnit
      */
     @Override
@@ -139,7 +146,6 @@ abstract public class Product implements CommodityUnit, Rateable<Product> {
     }
 
     /**
-     *
      * @see CommodityUnit
      */
     @Override
@@ -148,7 +154,6 @@ abstract public class Product implements CommodityUnit, Rateable<Product> {
     }
 
     /**
-     *
      * @see CommodityUnit
      */
     @Override
@@ -157,13 +162,17 @@ abstract public class Product implements CommodityUnit, Rateable<Product> {
     }
 
     /**
-     *
      * @see CommodityUnit
      */
     @Override
     public Rating getRating() {
         return rating;
     }
+
+
+    /**
+     * Overridden methods and custom modification methods of the toString () method
+     */
 
     /**
      * <h2>Method toString() overriding for convenient debugging</h2>
@@ -185,7 +194,6 @@ abstract public class Product implements CommodityUnit, Rateable<Product> {
     }
 
     /**
-     *
      * @see Object
      */
     @Override
@@ -201,7 +209,6 @@ abstract public class Product implements CommodityUnit, Rateable<Product> {
     }
 
     /**
-     *
      * @see Object
      */
     @Override
@@ -216,7 +223,6 @@ abstract public class Product implements CommodityUnit, Rateable<Product> {
     }
 
     /**
-     *
      * @see CommodityUnit
      */
     @Override

@@ -27,8 +27,8 @@ package labs.pm.data;
  */
 
 public enum ProductType {
-    FOOD(),
-    DRINK(),
+    FOOD,
+    DRINK,
     NONFOOD;
 
     ProductType(){}

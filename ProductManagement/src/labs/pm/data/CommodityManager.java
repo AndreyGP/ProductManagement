@@ -20,10 +20,13 @@ package labs.pm.data;
 
 import labs.pm.exceptions.CommodityManagerException;
 
+import java.math.BigDecimal;
 import java.text.MessageFormat;
 import java.text.NumberFormat;
+import java.text.ParseException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.time.format.FormatStyle;
 import java.util.*;
 import java.util.function.Predicate;
@@ -48,6 +51,10 @@ import static labs.pm.data.Rating.*;
 public class CommodityManager {
     private Map<Product, List<Review>> products = new HashMap<>();
     private ResourceFormatter formatter;
+    private ResourceBundle config = ResourceBundle.getBundle("labs.pm.data.config", Locale.getDefault());
+    private MessageFormat reviewFormat = new MessageFormat(config.getString("review.data.format"));
+    private MessageFormat productFormat = new MessageFormat(config.getString("product.data.format"));
+
     /**
      * HashMap containing all the localizations supported by the application
      * Not the final option!
@@ -224,7 +231,6 @@ public class CommodityManager {
     }
 
     public void printProductReport(final Product product) {
-//        if (product != null) {
         StringBuilder report = new StringBuilder();
         report.append(formatter.formatProduct(product)).append('\n');
         List<Review> reviews = products.get(product);
@@ -236,10 +242,6 @@ public class CommodityManager {
                     .collect(Collectors.joining()));
         }
         System.out.println(report);
-//
-//        } else {
-//            System.out.println("Wrong! No such product item!");
-//        }
     }
 
     public void printProducts(Predicate<Product> filter, Comparator<Product> sorter) {
@@ -251,6 +253,36 @@ public class CommodityManager {
                 .collect(Collectors.joining("\n"));
         if (!text.isEmpty()) System.out.println(text + "\n");
         else System.out.println("No product items" + "\n");
+    }
+
+    public void parseReview(String text) {
+        try {
+            Object[] value = reviewFormat.parse(text);
+            reviewProduct(Integer.parseInt((String) value[0]), Rateable.convert(Integer.parseInt((String) value[1])), (String) value[2]);
+        } catch (ParseException | NumberFormatException e) {
+            logger.log(Level.WARNING, "Warning! Error parsing review \"" + text + "\" ");
+        }
+    }
+
+    public void parseProduct(String text) {
+        try {
+            Object[] value = productFormat.parse(text);
+            int id = Integer.parseInt((String) value[1]);
+            String name = (String) value[2];
+            BigDecimal price = new BigDecimal((String) value[3]);
+            Rating rating = Rateable.convert(Integer.parseInt((String) value[4]));
+            BigDecimal discountRate = new BigDecimal((String) value[5]);
+            ProductType productType = ProductType.valueOf((String) value[0]);
+            switch (productType) {
+                case DRINK -> new Drink(id, name, price, rating, discountRate);
+                case FOOD -> new Food(id, name, price, rating, discountRate, LocalDate.now());
+                case NONFOOD -> new NonFood(id, name, price, rating, discountRate);
+            }
+        } catch (ParseException | NumberFormatException | DateTimeParseException e) {
+            logger.log(Level.WARNING, "Warning! Error parsing product \"" + text + "\" " + e.getLocalizedMessage());
+        } catch (IllegalArgumentException e) {
+            logger.log(Level.WARNING, "Warning! Product type not correct to  \"" + text + "\" " + e.getLocalizedMessage());
+        }
     }
 
     private static class ResourceFormatter {
