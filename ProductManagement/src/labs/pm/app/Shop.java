@@ -20,21 +20,21 @@ import java.util.function.Predicate;
 
 public class Shop {
     public static void main(String[] args) {
-        Predicate<Product> negativeRatingFilter = p -> p.getRating().ordinal() <= 3;
-        Predicate<Product> positiveRatingFilter = p -> p.getRating().ordinal() > 3;
-        Predicate<Product> allRatingFilter = p -> true;
+//        Predicate<Product> negativeRatingFilter = p -> p.getRating().ordinal() <= 3;
+//        Predicate<Product> positiveRatingFilter = p -> p.getRating().ordinal() > 3;
+//        Predicate<Product> allRatingFilter = p -> true;
+//
+//        Comparator<Product> ratingSorter = (p1, p2) -> p2.getRating().ordinal() - p1.getRating().ordinal();
+//        Comparator<Product> priceSorter = (p1, p2) -> p2.getPrice().compareTo(p1.getPrice());
+//        Comparator<Product> idSorter = (p1, p2) -> p1.getId() - p2.getId();
+//        Comparator<Product> ratingThenPriceAscSorter = ratingSorter.thenComparing(priceSorter);
+//        Comparator<Product> ratingThenPriceDescSorter = ratingThenPriceAscSorter.reversed();
 
-        Comparator<Product> ratingSorter = (p1, p2) -> p2.getRating().ordinal() - p1.getRating().ordinal();
-        Comparator<Product> priceSorter = (p1, p2) -> p2.getPrice().compareTo(p1.getPrice());
-        Comparator<Product> idSorter = (p1, p2) -> p1.getId() - p2.getId();
-        Comparator<Product> ratingThenPriceAscSorter = ratingSorter.thenComparing(priceSorter);
-        Comparator<Product> ratingThenPriceDescSorter = ratingThenPriceAscSorter.reversed();
-
-        System.out.println("This app supports the following languages:");
-        CommodityManager.getSupportedLocales().forEach(System.out::println);
+//        System.out.println("This app supports the following languages:");
+//        CommodityManager.getSupportedLocales().forEach(System.out::println);
 
         CommodityManager cm = new CommodityManager("ru-RU");
-        cm.printProducts(allRatingFilter, ratingSorter);
+//        cm.printProducts(allRatingFilter, ratingSorter);
 
         Product drink = cm.createNewProduct("Juice", 76.99, ProductType.DRINK);
 //        cm.printProductReport(drink);
@@ -80,7 +80,7 @@ public class Shop {
         cm.reviewProduct(nonFoodId, Rating.FIVE_STARS, "Я тоже из Вилларибо!");
         cm.reviewProduct(nonFoodId, Rating.FIVE_STARS, "Я даже похудела, как оно борется с жиром!");
 //        cm.printProductReport(nonFoodId);
-        cm.printProductReport(7);
+//        cm.printProductReport(7);
 
 //        cm.printProducts(positiveRatingFilter, ratingSorter);
 //        cm.printProducts(allRatingFilter, priceSorter);
@@ -88,6 +88,9 @@ public class Shop {
 //        cm.printProducts(allRatingFilter, ratingThenPriceAscSorter);
 //        cm.printProducts(allRatingFilter, ratingThenPriceDescSorter);
 
-        cm.getDiscounts().forEach((nameAndRating, discount) -> System.out.println(nameAndRating + "\t" + discount));
+//        cm.getDiscounts().forEach((nameAndRating, discount) -> System.out.println(nameAndRating + "\t" + discount));
+
+        cm.parseReview("2, 3, Testing review");
+        cm.parseProduct("DRINK, 1, Water, 9.99, 4, 10");
     }
 }
