@@ -1,6 +1,8 @@
 package labs.pm.data;
 
+import java.io.Serializable;
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.Comparator;
 
 import static java.math.RoundingMode.HALF_UP;
@@ -17,7 +19,7 @@ import static labs.pm.data.Rating.*;
  * Parent class for all types of food items
  */
 
-abstract public class Product implements CommodityUnit, Rateable<Product> {
+abstract public class Product implements CommodityUnit, Rateable<Product>, Serializable {
     /**
      * Assigns an ID [SKU] for each new product
      */
@@ -56,6 +58,11 @@ abstract public class Product implements CommodityUnit, Rateable<Product> {
     private final BigDecimal DISCOUNT_RATE;
 
     /**
+     * Product shelf life
+     */
+    private final LocalDate bestBefore;
+
+    /**
      * Class constructors block
      */
 
@@ -63,7 +70,7 @@ abstract public class Product implements CommodityUnit, Rateable<Product> {
      * <h2>Parameterless constructor.</h2> <p>Sets "null" values to the fields of the class. Used for debugging.</p>
      */
     Product() {
-        this(0, "no name", BigDecimal.ZERO, NOT_RATED, valueOf(0.00));
+        this(0, "no name", BigDecimal.ZERO, NOT_RATED, valueOf(0.00), LocalDate.now().minusDays(30));
     }
 
     /**
@@ -90,12 +97,15 @@ abstract public class Product implements CommodityUnit, Rateable<Product> {
      * @param rating BigDecimal - The primary rating given to a new product
      */
     Product(final String name, final BigDecimal price, final Rating rating) {
-        this.name = name;
-        this.price = price;
-        this.rating = rating;
-        this.percentageDiscount = 5;
-        this.DISCOUNT_RATE = valueOf((double) percentageDiscount / (double) 100);
-        this.id = ++maxId;
+        this(++maxId, name, price, rating, valueOf(5));
+    }
+
+    public Product(final String name, final BigDecimal price, final Rating rating, final LocalDate bestBefore) {
+        this(++maxId, name, price, rating, valueOf(5), bestBefore);
+    }
+
+    public Product(final int id, final String name, final BigDecimal price, final Rating rating, final BigDecimal discount_rate) {
+        this(id, name, price, rating, discount_rate, LocalDate.now().plusDays(30));
     }
 
     /**
@@ -108,13 +118,15 @@ abstract public class Product implements CommodityUnit, Rateable<Product> {
      * @param DISCOUNT_RATE BigDecimal - The current discount for this product
      * @param bestBefore    LocalDate - Product shelf life
      */
-    Product(final int id, final String name, final BigDecimal price, final Rating rating, final BigDecimal DISCOUNT_RATE) {
+
+    Product(final int id, final String name, final BigDecimal price, final Rating rating, final BigDecimal DISCOUNT_RATE, final LocalDate bestBefore) {
         this.id = id;
         this.name = name;
         this.price = price;
         this.rating = rating;
         this.percentageDiscount = DISCOUNT_RATE.intValue();
         this.DISCOUNT_RATE = valueOf(percentageDiscount / (double) 100);
+        this.bestBefore = bestBefore;
     }
 
     /**
@@ -167,6 +179,16 @@ abstract public class Product implements CommodityUnit, Rateable<Product> {
     @Override
     public Rating getRating() {
         return rating;
+    }
+
+
+    /**
+     * <h2>Get value of the best before product</h2>
+     * @return LocalDate value field bestBefore
+     * @see LocalDate
+     */
+    public LocalDate getBestBefore() {
+        return this.bestBefore;
     }
 
 

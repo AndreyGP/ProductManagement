@@ -20,7 +20,13 @@ package labs.pm.data;
 
 import labs.pm.exceptions.CommodityManagerException;
 
+import java.io.*;
 import java.math.BigDecimal;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.text.MessageFormat;
 import java.text.NumberFormat;
 import java.text.ParseException;
@@ -50,62 +56,41 @@ import static labs.pm.data.Rating.*;
 
 public class CommodityManager {
     private Map<Product, List<Review>> products = new HashMap<>();
-    private ResourceFormatter formatter;
-    private ResourceBundle config = ResourceBundle.getBundle("labs.pm.data.config", Locale.getDefault());
-    private MessageFormat reviewFormat = new MessageFormat(config.getString("review.data.format"));
-    private MessageFormat productFormat = new MessageFormat(config.getString("product.data.format"));
+    private final ResourceBundle config = ResourceBundle.getBundle("resources.config", Locale.getDefault());
+    private final MessageFormat reviewFormat = new MessageFormat(config.getString("review.data.format"));
+    private final MessageFormat productFormat = new MessageFormat(config.getString("product.data.format"));
+    private final Path reportsFolder = Path.of(config.getString("reports.folder"));
+    private final Path dataFolder = Path.of(config.getString("data.folder"));
+    private final Path tempFolder = Path.of(config.getString("temp.folder"));
+    private static final CommodityManager instance = new CommodityManager();
 
     /**
      * HashMap containing all the localizations supported by the application
      * Not the final option!
      * <p>
-     * TO DO: Add a nesting level so that the getSupportedLocales () method displays localizations as:
-     * "English UK"
-     * "English US"
-     * "Русский РФ"
-     * etc.
+     * <p>TO DO: </p>
+     * <p>Add a nesting level so that the getSupportedLocales () method displays localizations as:</p>
+     * <li>"English UK"</li>
+     * <li>"English US"</li>
+     * <li>"Русский РФ"</li>
+     * <li>etc.</li>
      */
-    private static Map<String, ResourceFormatter> formatters = Map.of(
+    private static final Map<String, ResourceFormatter> formatters = Map.of(
             "en-US", new ResourceFormatter(Locale.US),
             "en-UK", new ResourceFormatter(Locale.UK),
             "ru-RU", new ResourceFormatter(new Locale("ru", "RU")));
 
-    private static Logger logger = Logger.getLogger(CommodityManager.class.getName());
+    private static final Logger logger = Logger.getLogger(CommodityManager.class.getName());
 
     /**
      * Default constructor method. Sets default locale
      */
-    public CommodityManager() {
-        this(Locale.getDefault());
+    private CommodityManager() {
+        loadAllData();
     }
 
-    /**
-     * <p>Constructor method sets the locale of the class to the passed parameter.
-     * Pass the locale string tag to the overloaded constructor</p>
-     *
-     * @param locale Locale - The specified locale Locale type. Effectively the final variable of the method.
-     */
-    public CommodityManager(final Locale locale) {
-        this(locale.toLanguageTag());
-    }
-
-    /**
-     * <p>Constructor method sets the locale of the class to the passed parameter.
-     * Sets the locale via the changeLocal () method</p>
-     *
-     * @param languageTag String - The specified locale String type. Effectively the final variable of the method.
-     */
-    public CommodityManager(final String languageTag) {
-        changeLocal(languageTag);
-    }
-
-    /**
-     * <p>Changes the current or sets the original (when instantiating the class) locale</p>
-     *
-     * @param languageTag String - Locale string tag
-     */
-    public void changeLocal(final String languageTag) {
-        formatter = formatters.getOrDefault(languageTag, formatters.get("ru-RU"));
+    public static CommodityManager getInstance() {
+        return instance;
     }
 
     /**
@@ -122,7 +107,8 @@ public class CommodityManager {
     /**
      * @return
      */
-    public Map<String, String> getDiscounts() {
+    public Map<String, String> getDiscounts(final String languageTag) {
+        ResourceFormatter formatter = formatters.getOrDefault(languageTag, formatters.get("ru-RU"));
         return products.keySet()
                 .stream()
                 .collect(Collectors.groupingBy(
@@ -146,45 +132,6 @@ public class CommodityManager {
             case DRINK -> createNewDrink(name, price);
             case NONFOOD -> createNewNonFood(name, price);
         };
-    }
-
-    /**
-     * Helper method for createNewProduct ()
-     *
-     * @param name  String - new Food name
-     * @param price double - original price of a new product
-     * @return new Food reference
-     */
-    private Product createNewFood(final String name, final double price) {
-        Product product = new Food(name, valueOf(price), NOT_RATED, now().plusDays(7));
-        products.put(product, new ArrayList<>());
-        return product;
-    }
-
-    /**
-     * Helper method for createNewProduct ()
-     *
-     * @param name  String - new Drink name
-     * @param price double - original price of a new product
-     * @return new Drink reference
-     */
-    private Product createNewDrink(final String name, final double price) {
-        Product product = new Drink(name, valueOf(price), NOT_RATED);
-        products.put(product, new ArrayList<>());
-        return product;
-    }
-
-    /**
-     * Helper method for createNewProduct ()
-     *
-     * @param name  String - new NonFood name
-     * @param price double - original price of a new product
-     * @return new NonFood reference
-     */
-    private Product createNewNonFood(final String name, final double price) {
-        Product product = new NonFood(name, valueOf(price), NOT_RATED);
-        products.put(product, new ArrayList<>());
-        return product;
     }
 
     public Product findProductById(final int id) throws CommodityManagerException {
@@ -221,27 +168,32 @@ public class CommodityManager {
         return newProduct;
     }
 
-    public void printProductReport(final int id) {
+    public void printProductReport(final int id, final String languageTag) {
         try {
-            printProductReport(findProductById(id));
+            printProductReport(findProductById(id), languageTag);
         } catch (CommodityManagerException e) {
             logger.log(Level.INFO, e.getLocalizedMessage() + "\n");
-            System.out.println(e.getMessage() + "\n");
+        } catch (IOException e) {
+            logger.log(Level.SEVERE, "Error printing product report " + e.getMessage(), e);
         }
     }
 
-    public void printProductReport(final Product product) {
-        StringBuilder report = new StringBuilder();
-        report.append(formatter.formatProduct(product)).append('\n');
+    public void printProductReport(final Product product, final String languageTag) throws IOException {
+        ResourceFormatter formatter = formatters.getOrDefault(languageTag, formatters.get("ru-RU"));
         List<Review> reviews = products.get(product);
-        if (reviews.isEmpty()) {
-            report.append(formatter.getText("no.reviews")).append('\n');
-        } else {
-            report.append(reviews.stream()
-                    .map(review -> formatter.formatReviews(review) + '\n')
-                    .collect(Collectors.joining()));
+        Path reportFile = reportsFolder.resolve(
+                MessageFormat.format(config.getString("report.file"), product.getId()));
+        try (PrintWriter out = new PrintWriter(new OutputStreamWriter(
+                Files.newOutputStream(reportFile, StandardOpenOption.CREATE), "UTF-8"))) {
+            out.append(formatter.formatProduct(product) + System.lineSeparator());
+            if (reviews.isEmpty()) {
+                out.append(formatter.getText("no.reviews"));
+            } else {
+                out.append(reviews.stream()
+                        .map(review -> formatter.formatReviews(review) + System.lineSeparator())
+                        .collect(Collectors.joining()));
+            }
         }
-        System.out.println(report);
     }
 
     public void printProducts(Predicate<Product> filter, Comparator<Product> sorter) {
@@ -255,34 +207,152 @@ public class CommodityManager {
         else System.out.println("No product items" + "\n");
     }
 
-    public void parseReview(String text) {
-        try {
-            Object[] value = reviewFormat.parse(text);
-            reviewProduct(Integer.parseInt((String) value[0]), Rateable.convert(Integer.parseInt((String) value[1])), (String) value[2]);
-        } catch (ParseException | NumberFormatException e) {
-            logger.log(Level.WARNING, "Warning! Error parsing review \"" + text + "\" ");
+    /**
+     * Helper method for createNewProduct ()
+     *
+     * @param name  String - new Food name
+     * @param price double - original price of a new product
+     * @return new Food reference
+     */
+    private Product createNewFood(final String name, final double price) {
+        Product product = new Food(name, valueOf(price), NOT_RATED, now().plusDays(7));
+        dumpProduct(product);
+        return product;
+    }
+
+    /**
+     * Helper method for createNewProduct ()
+     *
+     * @param name  String - new Drink name
+     * @param price double - original price of a new product
+     * @return new Drink reference
+     */
+    private Product createNewDrink(final String name, final double price) {
+        Product product = new Drink(name, valueOf(price), NOT_RATED);
+        dumpProduct(product);
+        return product;
+    }
+
+    /**
+     * Helper method for createNewProduct ()
+     *
+     * @param name  String - new NonFood name
+     * @param price double - original price of a new product
+     * @return new NonFood reference
+     */
+    private Product createNewNonFood(final String name, final double price) {
+        Product product = new NonFood(name, valueOf(price), NOT_RATED);
+        dumpProduct(product);
+        return product;
+    }
+
+    private void dumpProduct(Product product) {
+        products.put(product, new ArrayList<>());
+        Path productFile = dataFolder.resolve(
+                MessageFormat.format(config.getString("product.data.file"), product.getId()));
+        try (PrintWriter out = new PrintWriter(new OutputStreamWriter(
+                Files.newOutputStream(productFile, StandardOpenOption.CREATE), "UTF-8"))) {
+            String productSaveFormat = MessageFormat.format(
+                    config.getString("product.data.format"),
+                    product.getClass().getSimpleName().toString().toUpperCase(),
+                    product.getId(),
+                    product.getName(),
+                    product.getPrice().toString(),
+                    product.getRating().ordinal(),
+                    product.getPercentageDiscount(),
+                    product.getBestBefore().toString());
+            out.append(productSaveFormat);
+        } catch (IOException e) {
+            logger.log(Level.WARNING, "Error create product file " + e.getMessage(), e);
         }
     }
 
-    public void parseProduct(String text) {
+    private void loadAllData() {
+        try {
+            products = Files.list(dataFolder)
+                    .filter(file -> file.getFileName().toString().startsWith("product"))
+                    .map(file -> loadProduct(file))
+                    .filter(product -> product != null)
+                    .collect(Collectors.toMap(product -> product, product -> loadReviews(product)));
+        } catch (IOException e) {
+            logger.log(Level.SEVERE, "Error loading all data " + e.getMessage(), e);
+        }
+    }
+
+    private List<Review> loadReviews(Product product) {
+        List<Review> reviews = null;
+        Path reviewFile = dataFolder.resolve(
+                MessageFormat.format(config.getString("reviews.data.file"), product.getId()));
+        if (Files.notExists(reviewFile)) reviews = new ArrayList<>();
+        else {
+            try {
+                reviews = Files.lines(reviewFile, Charset.forName("UTF-8"))
+                        .map(text -> parseReview(text))
+                        .filter(review -> review != null)
+                        .sorted((p1, p2) -> p2.getRating().ordinal() - p1.getRating().ordinal())
+                        .collect(Collectors.toList());
+            } catch (IOException e) {
+                logger.log(Level.SEVERE, "Warning! Error loading product review " + e.getMessage(), e);
+            }
+        }
+        return reviews;
+    }
+
+    private Product loadProduct(Path file) {
+        Product product = null;
+        try {
+            product = parseProduct(
+                    Files.lines(dataFolder.resolve(file), Charset.forName("UTF-8"))
+                            .findFirst().orElseThrow());
+        } catch (Exception e) {
+            logger.log(Level.WARNING, "Warning! Error loading product! " + e.getMessage(), e);
+        }
+        return product;
+    }
+
+    private Review parseReview(String text) {
+        Review review = null;
+        try {
+            Object[] value = reviewFormat.parse(text);
+            review = new Review(Rateable.convert(Integer.parseInt((String) value[0])), (String) value[1]);
+        } catch (ParseException | NumberFormatException e) {
+            logger.log(Level.WARNING, "Warning! Error parsing review \"" + text + "\" ");
+        }
+        return review;
+    }
+
+    private Product parseProduct(String text) {
+        Product product = null;
         try {
             Object[] value = productFormat.parse(text);
+            ProductType productType = ProductType.valueOf((String) value[0]);
             int id = Integer.parseInt((String) value[1]);
             String name = (String) value[2];
             BigDecimal price = new BigDecimal((String) value[3]);
             Rating rating = Rateable.convert(Integer.parseInt((String) value[4]));
             BigDecimal discountRate = new BigDecimal((String) value[5]);
-            ProductType productType = ProductType.valueOf((String) value[0]);
-            switch (productType) {
+            LocalDate bestBefore = LocalDate.now();
+            if (productType == ProductType.FOOD) bestBefore = LocalDate.parse((String) value[6]);
+            product = switch (productType) {
                 case DRINK -> new Drink(id, name, price, rating, discountRate);
-                case FOOD -> new Food(id, name, price, rating, discountRate, LocalDate.now());
+                case FOOD -> new Food(id, name, price, rating, discountRate, bestBefore);
                 case NONFOOD -> new NonFood(id, name, price, rating, discountRate);
-            }
+            };
         } catch (ParseException | NumberFormatException | DateTimeParseException e) {
             logger.log(Level.WARNING, "Warning! Error parsing product \"" + text + "\" " + e.getLocalizedMessage());
         } catch (IllegalArgumentException e) {
             logger.log(Level.WARNING, "Warning! Product type not correct to  \"" + text + "\" " + e.getLocalizedMessage());
         }
+        return product;
+    }
+
+    private void dumpData() {
+
+    }
+
+    @SuppressWarnings("unchecked")
+    private void restoreData() {
+
     }
 
     private static class ResourceFormatter {
@@ -294,7 +364,7 @@ public class CommodityManager {
 
         private ResourceFormatter(final Locale locale) {
             this.locale = locale;
-            resource = ResourceBundle.getBundle("labs.pm.data.productbundle", locale);
+            resource = ResourceBundle.getBundle("resources.productbundle", locale);
             dateFormat = DateTimeFormatter.ofLocalizedDate(FormatStyle.SHORT).localizedBy(locale);
             moneyFormat = NumberFormat.getCurrencyInstance(locale);
         }

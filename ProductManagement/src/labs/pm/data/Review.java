@@ -18,6 +18,8 @@
 
 package labs.pm.data;
 
+import java.io.Serializable;
+
 /**
  * <h2>Product Review Class</h2>
  * <p>ProductManagement Created by Home Work Studio AndrHey [andreigp]</p>
@@ -26,7 +28,7 @@ package labs.pm.data;
  * @author Andrei G. Pastushenko
  */
 
-public class Review implements Comparable<Review>{
+public class Review implements Comparable<Review>, Serializable {
     /**
      * Current review rating
      */

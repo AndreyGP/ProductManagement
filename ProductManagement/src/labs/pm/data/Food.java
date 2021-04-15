@@ -19,10 +19,7 @@ import static java.math.RoundingMode.HALF_UP;
  */
 
 public class Food extends Product {
-    /**
-     * Product shelf life
-     */
-    private final LocalDate bestBefore;
+
 
     /**
      * <h2>This constructor is used to create an object of an existing product obtained from the database.</h2>
@@ -34,8 +31,7 @@ public class Food extends Product {
      * @param bestBefore LocalDate - Product shelf life
      */
     Food(final int id, final String name, final BigDecimal price, final Rating rating, final BigDecimal DISCOUNT_RATE, final LocalDate bestBefore) {
-        super(id, name, price, rating, DISCOUNT_RATE);
-        this.bestBefore = bestBefore;
+        super(id, name, price, rating, DISCOUNT_RATE, bestBefore);
     }
 
     /**
@@ -46,17 +42,7 @@ public class Food extends Product {
      * @param bestBefore LocalDate - Shelf life
      */
     Food(final String name, final BigDecimal price, final Rating rating, final LocalDate bestBefore) {
-        super(name, price, rating);
-        this.bestBefore = bestBefore;
-    }
-
-    /**
-     * <h2>Get value of the best before product</h2>
-     * @return LocalDate value field bestBefore
-     * @see LocalDate
-     */
-    public LocalDate getBestBefore() {
-        return this.bestBefore;
+        super(name, price, rating, bestBefore);
     }
 
     /**
@@ -65,7 +51,7 @@ public class Food extends Product {
      */
     @Override
     public BigDecimal getDiscount() {
-        return this.bestBefore.isEqual(now()) ? getPrice().multiply(valueOf(0.50)).setScale(2, HALF_UP) : super.getDiscount();
+        return getBestBefore().isEqual(now()) ? getPrice().multiply(valueOf(0.50)).setScale(2, HALF_UP) : super.getDiscount();
     }
 
     /**
