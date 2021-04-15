@@ -35,6 +35,9 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.time.format.FormatStyle;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.function.Predicate;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -62,6 +65,9 @@ public class CommodityManager {
     private final Path reportsFolder = Path.of(config.getString("reports.folder"));
     private final Path dataFolder = Path.of(config.getString("data.folder"));
     private final Path tempFolder = Path.of(config.getString("temp.folder"));
+    private final ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
+    private final Lock readLock = lock.readLock();
+    private final Lock writeLock = lock.writeLock();
     private static final CommodityManager instance = new CommodityManager();
 
     /**
@@ -108,14 +114,19 @@ public class CommodityManager {
      * @return
      */
     public Map<String, String> getDiscounts(final String languageTag) {
+        try {
+            readLock.lock();
         ResourceFormatter formatter = formatters.getOrDefault(languageTag, formatters.get("ru-RU"));
         return products.keySet()
                 .stream()
                 .collect(Collectors.groupingBy(
-                        product -> product.getName() + "\t" + product.getRating().getStars(),
+                        product -> product.getName() + "\t" + product.getRating().getStars() + " ",
                         Collectors.collectingAndThen(
                                 Collectors.summingDouble(product -> product.getDiscount().doubleValue()),
                                 discount -> formatter.moneyFormat.format(discount))));
+        } finally {
+            readLock.unlock();
+        }
     }
 
     /**
@@ -127,84 +138,78 @@ public class CommodityManager {
      * @return new ProductType reference
      */
     public Product createNewProduct(final String name, final double price, final ProductType productType) {
-        return switch (productType) {
-            case FOOD -> createNewFood(name, price);
-            case DRINK -> createNewDrink(name, price);
-            case NONFOOD -> createNewNonFood(name, price);
-        };
+        Product product = null;
+        try {
+            writeLock.lock();
+            product = switch (productType) {
+                case FOOD -> createNewFood(name, price);
+                case DRINK -> createNewDrink(name, price);
+                case NONFOOD -> createNewNonFood(name, price);
+            };
+        } catch (Exception e) {
+            logger.log(Level.INFO, "Error adding product " + e.getMessage());
+            return null;
+        } finally {
+            writeLock.unlock();
+        }
+
+        return product;
     }
 
     public Product findProductById(final int id) throws CommodityManagerException {
-        return products
-                .keySet()
-                .stream()
-                .filter(product -> product.getId() == id)
-                .findFirst()
-                .orElseThrow(() -> new CommodityManagerException("Wrong! Product item with id " + id + " no such!"));
+        try {
+            readLock.lock();
+            return products
+                    .keySet()
+                    .stream()
+                    .filter(product -> product.getId() == id)
+                    .findFirst()
+                    .orElseThrow(() -> new CommodityManagerException("Wrong! Product item with id " + id + " no such!"));
+        } finally {
+            readLock.unlock();
+        }
     }
 
     public Product reviewProduct(final int id, final Rating rating, final String comment) {
         try {
+            writeLock.lock();
             return reviewProduct(findProductById(id), rating, comment);
         } catch (CommodityManagerException e) {
             logger.log(Level.INFO, e.getMessage());
+            return null;
+        } finally {
+            writeLock.unlock();
         }
-        return null;
     }
 
-    public Product reviewProduct(final Product product, final Rating rating, final String comment) {
-        List<Review> reviews = products.get(product);
-        products.remove(product, reviews);
-        reviews.add(new Review(rating, comment));
-        Collections.sort(reviews);
-        Product newProduct = product.applyRating(
-                Rateable.convert(
-                        (int) Math.round(
-                                reviews.stream()
-                                        .mapToInt(review -> review.getRating().ordinal())
-                                        .average()
-                                        .orElse(0))));
-        products.put(newProduct, reviews);
-        return newProduct;
-    }
-
-    public void printProductReport(final int id, final String languageTag) {
+    public void printProductReport(final int id, final String languageTag, final String client) {
         try {
-            printProductReport(findProductById(id), languageTag);
+            readLock.lock();
+            printProductReport(findProductById(id), languageTag, client);
         } catch (CommodityManagerException e) {
             logger.log(Level.INFO, e.getLocalizedMessage() + "\n");
         } catch (IOException e) {
             logger.log(Level.SEVERE, "Error printing product report " + e.getMessage(), e);
+        } finally {
+            readLock.unlock();
         }
     }
 
-    public void printProductReport(final Product product, final String languageTag) throws IOException {
-        ResourceFormatter formatter = formatters.getOrDefault(languageTag, formatters.get("ru-RU"));
-        List<Review> reviews = products.get(product);
-        Path reportFile = reportsFolder.resolve(
-                MessageFormat.format(config.getString("report.file"), product.getId()));
-        try (PrintWriter out = new PrintWriter(new OutputStreamWriter(
-                Files.newOutputStream(reportFile, StandardOpenOption.CREATE), "UTF-8"))) {
-            out.append(formatter.formatProduct(product) + System.lineSeparator());
-            if (reviews.isEmpty()) {
-                out.append(formatter.getText("no.reviews"));
-            } else {
-                out.append(reviews.stream()
-                        .map(review -> formatter.formatReviews(review) + System.lineSeparator())
-                        .collect(Collectors.joining()));
-            }
+    public void printProducts(Predicate<Product> filter, Comparator<Product> sorter, final String languageTag) {
+        try {
+            readLock.lock();
+            ResourceFormatter formatter = formatters.getOrDefault(languageTag, formatters.get("ru-RU"));
+            String text = products.keySet()
+                    .stream()
+                    .sorted(sorter)
+                    .filter(filter)
+                    .map(p -> formatter.formatProduct(p))
+                    .collect(Collectors.joining(System.lineSeparator()));
+            if (!text.isEmpty()) System.out.println(text + System.lineSeparator());
+            else System.out.println("No product items" + System.lineSeparator());
+        } finally {
+            readLock.unlock();
         }
-    }
-
-    public void printProducts(Predicate<Product> filter, Comparator<Product> sorter) {
-        String text = products.keySet()
-                .stream()
-                .sorted(sorter)
-                .filter(filter)
-                .map(p -> p.toString())
-                .collect(Collectors.joining("\n"));
-        if (!text.isEmpty()) System.out.println(text + "\n");
-        else System.out.println("No product items" + "\n");
     }
 
     /**
@@ -346,10 +351,50 @@ public class CommodityManager {
         return product;
     }
 
+    private Product reviewProduct(final Product product, final Rating rating, final String comment) {
+        List<Review> reviews = products.get(product);
+        products.remove(product, reviews);
+        reviews.add(new Review(rating, comment));
+        Collections.sort(reviews);
+        Product newProduct = product.applyRating(
+                Rateable.convert(
+                        (int) Math.round(
+                                reviews.stream()
+                                        .mapToInt(review -> review.getRating().ordinal())
+                                        .average()
+                                        .orElse(0))));
+        products.put(newProduct, reviews);
+        return newProduct;
+    }
+
+    private void printProductReport(final Product product, final String languageTag, final String client) throws IOException {
+        ResourceFormatter formatter = formatters.getOrDefault(languageTag, formatters.get("ru-RU"));
+        List<Review> reviews = products.get(product);
+        Path reportFile = reportsFolder.resolve(
+                MessageFormat.format(config.getString("report.file"), product.getId(), client));
+        try (PrintWriter out = new PrintWriter(new OutputStreamWriter(
+                Files.newOutputStream(reportFile, StandardOpenOption.CREATE), "UTF-8"))) {
+            out.append(formatter.formatProduct(product) + System.lineSeparator());
+            if (reviews.isEmpty()) {
+                out.append(formatter.getText("no.reviews"));
+            } else {
+                out.append(reviews.stream()
+                        .map(review -> formatter.formatReviews(review) + System.lineSeparator())
+                        .collect(Collectors.joining()));
+            }
+        }
+    }
+
+    /**
+     * TO DO : Make serialisation method logic
+     */
     private void dumpData() {
 
     }
 
+    /**
+     * TO DO : Make deserialisation method logic
+     */
     @SuppressWarnings("unchecked")
     private void restoreData() {
 
